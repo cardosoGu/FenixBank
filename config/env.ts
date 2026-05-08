@@ -1,5 +1,5 @@
 import "@std/dotenv/load";
-import { z } from 'npm:zod'
+import { z } from 'zod'
 
 //Exporting and Validating environment variables using zod
 const envSchema = z.object({

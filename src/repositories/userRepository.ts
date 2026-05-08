@@ -16,6 +16,9 @@ class UserRepositoryClass {
     create(userData: typeUserSchema) {
         return this.userModel.create(userData);
     }
+    findUserByPixKet(pixKey: string) {
+        return this.userModel.findOne({ "account.pixKeys": pixKey });
+    }
 
     updateById(userId: string, updateData: Partial<typeUserSchema>) {
         return this.userModel.findByIdAndUpdate(

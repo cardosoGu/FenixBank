@@ -1,7 +1,7 @@
 {
   "nodeModulesDir": "auto",
   "tasks": {
-    "dev": "deno run --watch --allow-env --allow-read --allow-sys --allow-net main.ts"
+    "dev": "deno run --watch --allow-env --allow-read --allow-sys --allow-net --allow-ffi server.ts"
   },
   "imports": {
     "@std/dotenv": "jsr:@std/dotenv@^0.225.6",

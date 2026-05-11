@@ -1,10 +1,12 @@
-import express, { Request, Response, Application } from 'express'
+import express, { Application } from 'express'
 import responser from 'responser'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
+import authRoutes from './src/features/auth/AuthRoute.ts'
 
 const app: Application = express()
 
@@ -23,7 +25,9 @@ const swaggerSpec = swaggerJSDoc({
 // Project Libs configs
 
 app.use(express.json())
-app.use(responser.default || responser)
+app.use(cookieParser())
+app.use(cookieParser())
+app.use(responser.default)
 app.use(morgan('dev'))
 app.use(helmet())
 app.use(cors())
@@ -32,11 +36,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Routes config
 
-
-app.get('/ping', (req: Request, res: Response) => {
-    req.headers
-    res.send_ok("Pong! 🏓")
-})
+app.use('/api/auth', authRoutes)
 
 // Middlewares Config
 

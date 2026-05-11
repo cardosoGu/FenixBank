@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { AuthController } from "./AuthController.ts";
-import { UserRepository } from "../auth/userRepository.ts";
+import { UserRepository } from "../../models/User/UserRepository.ts";
 import { AuthMiddleware } from "../../../middleware/authMiddleware.ts";
 import { AuthService } from "./authService.ts";
 /**

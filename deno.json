@@ -6,7 +6,8 @@
   "imports": {
     "@std/dotenv": "jsr:@std/dotenv@^0.225.6",
     "@zarco/isness": "jsr:@zarco/isness@^0.1.18",
-    "express": "npm:express@^5.2.1",
+    "cookie-parser": "npm:cookie-parser@^1.4.7",
+    "express": "npm:express@^5.1.0",
     "express/": "npm:@types/express/",
     "jsonwebtoken": "npm:jsonwebtoken@^9.0.3",
     "mongodb": "npm:mongodb@6.1.0",

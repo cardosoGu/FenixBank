@@ -26,7 +26,7 @@ router.post('/login', authMiddleware.notLogged, authController.login)
 // required login routes
 router.post('/logout', authMiddleware.isLogged, authController.logout)
 router.post('/logoutAll', authMiddleware.isLogged, authController.logoutAll)
-router.post('/refresh', authMiddleware.isLogged, authController.refresh)
+router.post('/refresh', authController.refresh)
 router.get('/me', authMiddleware.isLogged, authController.me)
 
 export default router

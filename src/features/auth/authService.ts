@@ -1,5 +1,5 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
-import { IUserCreateDTO, IUserLoginDTO } from "./AuthDTOs.ts";
+import { IUserDTO, IUserLoginDTO } from "./AuthDTOs.ts";
 import { jwtService } from "../../utils/Jwt.ts"
 import { ISession } from "../../models/User/IUser.ts";
 import { Types } from "mongoose";
@@ -10,7 +10,7 @@ export class AuthService {
     }
     private userRepository: UserRepository
 
-    async register(data: IUserCreateDTO, clientIp: string, userAgent: string) {
+    async register(data: IUserDTO, clientIp: string, userAgent: string) {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
             return { success: false, message: "Email already in use!" };
@@ -82,23 +82,28 @@ export class AuthService {
 
         return { success: true, message: "User logged out successfully!" };
     }
-    async refresh(userId: string, refreshToken: string, clientIp: string, userAgent: string) {
-        const user = await this.userRepository.findById(new Types.ObjectId(userId));
-        if (!user) {
-            return { success: false, message: "User not found!" };
-        }
+    async refresh(refreshToken: string, clientIp: string, userAgent: string) {
 
-        const actualSession = await user.sessions.find((session: ISession) => session.refreshToken === refreshToken);
-        if (!actualSession) {
-            return { success: false, message: "Session not found!" };
-        }
-
-        if (!await jwtService.verifyRefreshToken(refreshToken)) {
+        //validate refresh token
+        const payload = await jwtService.verifyRefreshToken(refreshToken)
+        if (!payload) {
             return { success: false, message: "Invalid refresh token!" };
         }
 
-        await this.userRepository.deleteSessionByRefreshToken(userId, refreshToken)
+        // validate if user exists and if session exists
+        const user = await this.userRepository.findById(new Types.ObjectId(payload.sub));
+        if (!user) {
+            return { success: false, message: "User not found!" };
+        }
+        if (!user.sessions.some((session: ISession) => session.refreshToken === refreshToken)) {
+            return { success: false, message: "Session not found!" };
+        }
 
+        // delete old session
+        await this.userRepository.deleteSessionByRefreshToken(payload.sub, refreshToken)
+
+
+        // create new session
         const newRefreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
 

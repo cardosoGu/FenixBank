@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express'
 import { AuthService } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
+import { IUserDTO } from "./AuthDTOs.ts";
 
 export class AuthController {
     constructor(authService: AuthService, authRules: AuthRules) {
@@ -108,11 +109,10 @@ export class AuthController {
     refresh: RequestHandler = async (req, res) => {
         const clientIp = req.ip ?? 'unknown';
         const userAgent = req.headers['user-agent'] ?? 'unknown';
-        const { userId } = req.user!
         const refreshToken = req.cookies['refreshToken']
 
         try {
-            const user = await this.authService.refresh(userId, refreshToken, clientIp, userAgent);
+            const user = await this.authService.refresh( refreshToken, clientIp, userAgent);
             if (!user.success) {
                 res.clearCookie('refreshToken');
                 return res.send_badRequest(user.message)
@@ -138,9 +138,21 @@ export class AuthController {
 
         try {
             const user = await this.authService.me(userId)
-            res.send_ok(user.message, user.user)
+            if (!user.user) {
+                return res.send_badRequest(user.message)
+            }
+
+            const userInfo: Omit<IUserDTO, 'password'> = {
+                name: user.user.name,
+                email: user.user.email,
+                cpf: user.user.cpf!,
+                pixKeys: user.user.account.pixKeys!,
+                balance: user.user.account.balance!,
+            }
+
+            res.send_ok(user.message, userInfo)
         } catch (error: any) {
             return res.send_internalServerError("Error fetching user info", error)
         }
-        }
     }
+}

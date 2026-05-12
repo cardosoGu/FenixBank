@@ -1,6 +1,6 @@
 import app from './app.ts'
-import { env } from './config/env.ts'
-import { DBConnection } from "./config/db.ts";
+import { env } from './config/Env.ts'
+import { DBConnection } from "./config/Db.ts";
 import throwlhos from 'throwlhos'
 
 async function main() {

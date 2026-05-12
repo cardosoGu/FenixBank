@@ -1,4 +1,4 @@
-import { Types } from 'mongoose'
+import { HydratedDocument, Model, Types } from 'mongoose'
 import { IBaseInterface } from '../../base/IBaseInterface.ts'
 
 export enum UserRole {
@@ -22,8 +22,17 @@ export interface IUser extends IBaseInterface {
   email: string
   cpf: string
   role: UserRole
-  passwordHash: string
+  password: string
   account: IAccount
   sessions: ISession[]
   transactionLogs: Types.ObjectId[]
 }
+
+export interface IUserMethods {
+  passwordMatches(plainPassword: string): Promise<boolean>;
+  readonly isAdmin: boolean;
+  readonly hasPixKeys: boolean;
+}
+
+export type UserDocument = HydratedDocument<IUser, IUserMethods>;
+export type UserModel = Model<IUser, {}, IUserMethods>;

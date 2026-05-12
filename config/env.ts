@@ -1,5 +1,6 @@
 import "@std/dotenv/load";
 import { z } from 'zod'
+import throwlhos from "throwlhos";
 
 //Exporting and Validating environment variables using zod
 const envSchema = z.object({
@@ -16,7 +17,7 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(Deno.env.toObject());
 
 if (!parsed.success) {
-  console.error("Environment variable validation failed:", parsed.error.format());
+  throwlhos.default.err_internalServerError("Environment variable validation failed:", parsed.error.format());
   Deno.exit(1);
 }
 

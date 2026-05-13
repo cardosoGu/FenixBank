@@ -24,6 +24,7 @@ router.post('/register', authMiddleware.notLogged, authController.register)
 router.post('/login', authMiddleware.notLogged, authController.login)
 
 // required login routes
+router.get('/sessions', authMiddleware.isLogged, authController.sessions)
 router.post('/logout', authMiddleware.isLogged, authController.logout)
 router.post('/logoutAll', authMiddleware.isLogged, authController.logoutAll)
 router.post('/refresh', authController.refresh)

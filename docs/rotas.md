@@ -2,23 +2,23 @@
 
 ## Auth
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/register` | Cria usuário + conta bancária |
-| POST | `/auth/login` | Autentica e retorna tokens |
-| GET | `/auth/me` | Retorna usuário autenticado |
-| POST | `/auth/refresh` | Renova o access token |
-| POST | `/auth/logout` | Encerra sessão atual |
-| POST | `/auth/logout-all` | Encerra todas as sessões |
-
+| Method |   Path  | Authenticado | Description |
+|--------|---------|--------------|-------------|
+| POST | `api/auth/register`   |❌| Cria usuário + conta bancária seta refreshToken e retorna accessToken |
+| POST | `api/auth/login`      |❌| Autentica usuario, seta refreshToken e retorna accessToken |
+| GET  | `api/auth/me`         |✅| Retorna dados do usuario autenticado |
+| POST | `api/auth/refresh`    |✅| Atualiza a sessão atual, seta novo refreshToken e retorna novo accessToken |
+| POST | `api/auth/logout`     |✅| limpa cookies, e encerra sessão atual |
+| POST | `api/auth/logout-all` |✅| Encerra todas as sessões ativas do usuario |
+| GET  | `api/auth/sessions`   |✅| Busca todas as sessões ativas do usuario |
 ---
 
 ## Bank — Operations
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/bank/operations/deposit` | Deposita valor na conta |
-| POST | `/bank/operations/withdraw` | Saca valor da conta |
+| POST | `api/bank/operations/deposit` | Deposita valor na conta |
+| POST | `api/bank/operations/withdraw` | Saca valor da conta |
 
 ---
 
@@ -26,7 +26,7 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/bank/transference` | Transfere via pix key |
+| POST | `api/bank/transference` | Transfere via pix key |
 
 ---
 
@@ -34,8 +34,8 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/bank/transactions` | Histórico do usuário autenticado |
-| GET | `/bank/transactions/:transactionId` | Detalhe de uma transação |
+| GET | `api/bank/transactions` | Histórico do usuário autenticado |
+| GET | `api/bank/transactions/:transactionId` | Detalhe de uma transação |
 
 ---
 
@@ -43,36 +43,8 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/bank/pix-keys` | Lista chaves do usuário |
-| POST | `/bank/pix-keys` | Adiciona nova chave pix |
-| DELETE | `/bank/pix-keys/:key` | Remove uma chave pix |
+| GET | `api/bank/pix-keys` | Lista chaves do usuário |
+| POST | `api/bank/pix-keys` | Adiciona nova chave pix |
+| DELETE | `api/bank/pix-keys/:key` | Remove uma chave pix |
 
 ---
-
-## Admin — Users
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/admin/users` | Lista todos os usuários |
-| GET | `/admin/users/:userId` | Detalhe de um usuário |
-| PATCH | `/admin/users/:userId` | Atualiza dados do usuário |
-| DELETE | `/admin/users/:userId` | Remove usuário |
-
----
-
-## Admin — Accounts
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/admin/accounts` | Lista todas as contas |
-| GET | `/admin/accounts/:userId` | Conta de um usuário |
-| PATCH | `/admin/accounts/:userId` | Atualiza conta |
-
----
-
-## Admin — Transactions
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/admin/transactions` | Lista todas as transações |
-| GET | `/admin/transactions/:transactionId` | Detalhe de qualquer transação |

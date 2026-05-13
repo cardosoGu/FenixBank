@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJSDoc from 'swagger-jsdoc'
 import authRoutes from './src/features/auth/AuthRoute.ts'
-
+import bankRoutes from './src/features/bank/BankRoutes.ts'
 const app: Application = express()
 
 const swaggerSpec = swaggerJSDoc({
@@ -37,6 +37,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // Routes config
 
 app.use('/api/auth', authRoutes)
+app.use('/api/bank', bankRoutes)
 
 // Middlewares Config
 

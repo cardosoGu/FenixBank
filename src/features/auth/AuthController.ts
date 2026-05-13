@@ -1,8 +1,6 @@
 import { RequestHandler } from 'express'
-import { AuthService } from "./AuthService.ts";
+import { AuthService, IUserDTO } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
-import { IUserDTO } from "./AuthDTOs.ts";
-
 export class AuthController {
     constructor(authService: AuthService, authRules: AuthRules) {
         this.authService = authService;
@@ -37,9 +35,9 @@ export class AuthController {
                 path: '/',
                 maxAge: 60 * 60 * 24 * 7, // 7 days
             });
-            res.send_ok("Login successfully!", user.accessToken)
+            res.send_ok("Login successfully!", { accessToken: user.accessToken })
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             return res.send_internalServerError("Error logging in", error)
         }
     }
@@ -68,7 +66,7 @@ export class AuthController {
                 maxAge: 60 * 60 * 24 * 7, // 7 days
             });
             res.send_created("User created successfully!", { user: { name: user.user?.name, email: user.user?.email }, accessToken: user.accessToken })
-        } catch (error: any) {
+        } catch (error: unknown) {
             return res.send_internalServerError("Error creating user", error)
         }
     }
@@ -85,7 +83,7 @@ export class AuthController {
 
             res.clearCookie('refreshToken');
             res.send_ok("Logout with success!")
-        } catch (error: any) {
+        } catch (error: unknown) {
             return res.send_internalServerError("Error logging out", error)
         }
     }
@@ -101,7 +99,7 @@ export class AuthController {
 
             res.clearCookie('refreshToken');
             res.send_ok("Logout all sessions with success!")
-        } catch (error: any) {
+        } catch (error: unknown) {
             return res.send_internalServerError("Error logging out", error)
         }
     }
@@ -112,7 +110,7 @@ export class AuthController {
         const refreshToken = req.cookies['refreshToken']
 
         try {
-            const user = await this.authService.refresh( refreshToken, clientIp, userAgent);
+            const user = await this.authService.refresh(refreshToken, clientIp, userAgent);
             if (!user.success) {
                 res.clearCookie('refreshToken');
                 return res.send_badRequest(user.message)
@@ -126,8 +124,8 @@ export class AuthController {
                 path: '/',
                 maxAge: 60 * 60 * 24 * 7, // 7 days
             });
-            res.send_ok("Token refreshed successfully!", user.accessToken)
-        } catch (error: any) {
+            res.send_ok("Token refreshed successfully!", { accessToken: user.accessToken })
+        } catch (error: unknown) {
             res.clearCookie('refreshToken');
             return res.send_internalServerError("Error refreshing token", error)
         }
@@ -150,9 +148,28 @@ export class AuthController {
                 balance: user.user.account.balance!,
             }
 
-            res.send_ok(user.message, userInfo)
-        } catch (error: any) {
+            res.send_ok(user.message, { user: userInfo })
+        } catch (error: unknown) {
             return res.send_internalServerError("Error fetching user info", error)
+        }
+    }
+
+    sessions: RequestHandler = async (req, res) => {
+        const { userId } = req.user!
+
+        try {
+            const user = await this.authService.sessions(userId)
+            if (!user.success) {
+                return res.send_badRequest(user.message)
+            }
+
+            const formattedSessions = user.sessions?.map(session => ({
+                clientIp: session.clientIp,
+                userAgent: session.userAgent,
+            }))
+            res.send_ok(user.message, { sessions: formattedSessions })
+        } catch (error: unknown) {
+            return res.send_internalServerError("Error fetching session info", error)
         }
     }
 }

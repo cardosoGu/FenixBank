@@ -12,7 +12,7 @@ type validationResult = {
 
 export class BaseRules {
 
-    private rules: Record<string, Rule> = {}
+    protected rules: Record<string, Rule> = {}
 
     // add validation rule for a field
     addRule(field: string, rule: Rule): this {
@@ -22,22 +22,17 @@ export class BaseRules {
 
     //run validation and return result
     protected run(data: Record<string, unknown>): validationResult {
-        const checker = rc.default();
+        const errors: { field: string, message: string }[] = []
 
-        // add rules to request-check
         for (const [field, rule] of Object.entries(this.rules)) {
-            checker.addRule(field, rule)
+            if (!rule.validator(data[field])) {
+                errors.push({ field, message: rule.message })
+            }
         }
-        // format body for request-check
-        const entries = Object.entries(data).map((([k, v]) => [[k], v]))
 
-        // match formatted data to rules
-        const errors = checker.check(...entries)
-
-        // clear rules after validation
         this.rules = {}
 
-        if (errors) return { success: false, errors }
+        if (errors.length > 0) return { success: false, errors }
         return { success: true }
     }
 }

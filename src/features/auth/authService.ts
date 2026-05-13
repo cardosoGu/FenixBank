@@ -1,8 +1,24 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
-import { IUserDTO, IUserLoginDTO } from "./AuthDTOs.ts";
+
 import { jwtService } from "../../utils/Jwt.ts"
 import { ISession } from "../../models/User/IUser.ts";
 import { Types } from "mongoose";
+import { hashToken } from "../../utils/Crypto.ts";
+
+export interface IUserDTO {
+    name: string;
+    email: string;
+    cpf: string;
+    password: string;
+    pixKeys: string[];
+    balance: number;
+}
+
+export interface IUserLoginDTO {
+    email: string;
+    password: string;
+}
+
 
 export class AuthService {
     constructor(userRepository: UserRepository) {
@@ -19,7 +35,7 @@ export class AuthService {
         const user = await this.userRepository.create({
             name: data.name,
             email: data.email,
-            cpf: data.cpf,
+            cpf: data.cpf.replace(/\D/g, ''),
             password: data.password,
             account: {
                 pixKeys: data.pixKeys,
@@ -32,7 +48,7 @@ export class AuthService {
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
 
-        await user.sessions.push({ refreshToken, clientIp, userAgent });
+        user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp, userAgent });
         await user.save()
 
         return { success: true, message: "User created successfully!", accessToken, refreshToken, user };
@@ -52,7 +68,7 @@ export class AuthService {
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
 
-        await user.sessions.push({ refreshToken, clientIp, userAgent });
+        user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp, userAgent });
         await user.save()
 
         return { success: true, message: "User logged in successfully!", user, accessToken, refreshToken };
@@ -63,12 +79,12 @@ export class AuthService {
         if (!user) {
             return { success: false, message: "User not found!" };
         }
-        const actualSession = await user.sessions.find((session: ISession) => session.refreshToken === refreshToken);
+        const actualSession = user.sessions.some((session: ISession) => session.refreshToken === hashToken(refreshToken))
         if (!actualSession) {
             return { success: false, message: "Session not found!" };
         }
 
-        await this.userRepository.deleteSessionByRefreshToken(userId, refreshToken)
+        await this.userRepository.deleteSessionByRefreshToken(userId, hashToken(refreshToken))
 
         return { success: true, message: "User logged out successfully!" };
     }
@@ -95,19 +111,19 @@ export class AuthService {
         if (!user) {
             return { success: false, message: "User not found!" };
         }
-        if (!user.sessions.some((session: ISession) => session.refreshToken === refreshToken)) {
+        if (!user.sessions.some((session: ISession) => session.refreshToken === hashToken(refreshToken))) {
             return { success: false, message: "Session not found!" };
         }
 
         // delete old session
-        await this.userRepository.deleteSessionByRefreshToken(payload.sub, refreshToken)
+        await this.userRepository.deleteSessionByRefreshToken(payload.sub, hashToken(refreshToken))
 
 
         // create new session
         const newRefreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
 
-        await user.sessions.push({ refreshToken: newRefreshToken, clientIp, userAgent });
+        user.sessions.push({ refreshToken: hashToken(newRefreshToken), clientIp, userAgent });
         await user.save()
 
         return { success: true, message: "User logged in successfully!", user, accessToken, refreshToken: newRefreshToken };
@@ -119,5 +135,15 @@ export class AuthService {
             return { success: false, message: "User not found!" };
         }
         return { success: true, message: "User info fetched successfully!", user };
+    }
+
+    async sessions(userId: string) {
+        const user = await this.userRepository.findById(new Types.ObjectId(userId));
+        if (!user) {
+            return { success: false, message: "User not found!" };
+        }
+
+        return { success: true, message: "User sessions fetched successfully!", sessions: user.sessions };
+
     }
 }

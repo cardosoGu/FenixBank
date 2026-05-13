@@ -14,7 +14,7 @@ export class AuthRules extends BaseRules {
         })
         this.addRule('cpf', {
             validator: (value: unknown) => is.cpf(value)
-            , message: 'CPF is required'
+            , message: 'Invalid CPF'
         })
         this.addRule('password', {
             validator: (value: unknown) => is.string(value) && (value as string).length >= 8,
@@ -26,7 +26,7 @@ export class AuthRules extends BaseRules {
         })
         this.addRule('balance', {
             validator: (value: unknown) => is.number(value) && (value as number) >= 0 && (value as number) <= 1000,
-            message: 'Invalid balance'
+            message: 'Invalid balance, must be less than or equal to 1000'
         })
         return this.run({ name: data.name, email: data.email, cpf: data.cpf, password: data.password, pixKeys: data.pixKeys, balance: data.balance })
     }

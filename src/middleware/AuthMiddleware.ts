@@ -3,6 +3,7 @@ import { jwtService } from "../utils/Jwt.ts";
 import { Types } from "mongoose";
 import { UserRepository } from "../models/User/UserRepository.ts";
 import { ISession } from "../models/User/IUser.ts";
+import { hashToken } from "../utils/Crypto.ts";
 
 /**
  * Middlewares to verify if user is'nt logged or if user is logged
@@ -10,10 +11,8 @@ import { ISession } from "../models/User/IUser.ts";
  */
 
 export class AuthMiddleware {
-    constructor(userRepository: UserRepository) {
-        this.userRepository = userRepository;
-    }
-    private userRepository: UserRepository
+    constructor(private userRepository: UserRepository) { }
+
 
     // Middleware to verify if user is logged
     isLogged: RequestHandler = async (req, res, next) => {
@@ -28,7 +27,9 @@ export class AuthMiddleware {
 
             if (!user) return res.send_unauthorized("User not found!")
 
-            const session = user.sessions.find((session: ISession) => session.refreshToken === refreshToken)
+            const session = user.sessions.find((session: ISession) => {
+                return session.refreshToken === hashToken(refreshToken)
+            })
 
             if (!session) return res.send_unauthorized("Session not found!")
 
@@ -75,3 +76,4 @@ export class AuthMiddleware {
     }
 
 }
+export const authMiddleware = new AuthMiddleware(new UserRepository())

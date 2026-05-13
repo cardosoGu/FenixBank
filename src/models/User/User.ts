@@ -60,7 +60,7 @@ class UserClass implements IUser, IUserMethods {
         return this.account.pixKeys.length > 0
     }
 
-    async passwordMatches(plainPassword: string): Promise<boolean> {
+    passwordMatches(plainPassword: string): Promise<boolean> {
         return bcrypt.compare(plainPassword, this.password)
     }
 
@@ -79,7 +79,9 @@ UserSchema.pre('save', async function (next) {
         const salt = await bcrypt.genSalt(10)
         this.password = await bcrypt.hash(this.password, salt)
     }
+
     next()
 })
+
 
 export { UserSchema }

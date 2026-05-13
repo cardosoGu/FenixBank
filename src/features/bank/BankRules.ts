@@ -1,5 +1,5 @@
 import { BaseRules } from "../../base/BaseRules.ts";
-import is from 'jsr:@zarco/isness'
+import is from '@zarco/isness'
 
 export class BankRules extends BaseRules {
     transfer(data: Record<string, unknown>) {
@@ -7,7 +7,7 @@ export class BankRules extends BaseRules {
             validator: (value: unknown) => is.number(value) && (value as number) > 0,
             message: 'Amount must be a positive number'
         })
-        this.addRule('toAccount', {
+        this.addRule('pixKey', {
             validator: (value: unknown) => is.string(value) && (value as string).trim() !== '',
             message: 'the Pix key must be a non-empty string'
         })
@@ -25,6 +25,13 @@ export class BankRules extends BaseRules {
         this.addRule('amount', {
             validator: (value: unknown) => is.number(value) && (value as number) > 0,
             message: 'Amount must be a positive number'
+        })
+        return this.run(data)
+    }
+    addPixKey(data: Record<string, unknown>) {
+        this.addRule('newPixKey', {
+            validator: (value: unknown) => is.string(value) && (value as string).trim().length > 0,
+            message: 'the Pix key must be a non-empty string'
         })
         return this.run(data)
     }

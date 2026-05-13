@@ -38,7 +38,7 @@ export class AuthService {
             cpf: data.cpf.replace(/\D/g, ''),
             password: data.password,
             account: {
-                pixKeys: data.pixKeys,
+                pixKeys: [...data.pixKeys, data.email, data.cpf],
                 balance: data.balance,
             },
         });

@@ -29,8 +29,7 @@ router.get('/transactions/:id', authMiddleware.isLogged, bankController.getTrans
 
 // account management
 router.get('/account', authMiddleware.isLogged, bankController.getAccountInfo)
-router.get('/pixKeys', authMiddleware.isLogged, bankController.getPixKeys)
-router.post('/pixKeys', authMiddleware.isLogged, bankController.addPixKey)
-router.delete('/pixKeys/:key', authMiddleware.isLogged, bankController.removePixKey)
+router.post('/pixKey', authMiddleware.isLogged, bankController.addPixKey)
+router.delete('/pixKey/:key', authMiddleware.isLogged, bankController.removePixKey)
 
 export default router

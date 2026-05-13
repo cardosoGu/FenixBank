@@ -3,6 +3,7 @@ import { BankService } from "./BankServices.ts";
 import { BankRules } from "./BankRules.ts";
 import { ITransactionLog } from "../../models/TransactionLogs/ITransactionLog.ts";
 
+
 export class BankController {
     constructor(bankService: BankService, bankRules: BankRules) {
         this.bankService = bankService
@@ -12,7 +13,23 @@ export class BankController {
     private bankRules: BankRules
 
     transfer: RequestHandler = async (req, res) => {
-        res.send_ok("Transfer successful!")
+        const { userId } = req.user!
+        const { pixKey, amount } = req.body
+
+        try{
+            const validation = this.bankRules.transfer(req.body)
+            if (!validation.success) {
+                return res.send_badRequest("Invalid Body", validation.errors)
+            }
+            const transfer = await this.bankService.transfer(userId, pixKey, amount)
+            if (!transfer.success) {
+                return res.send_badRequest("Transfer failed", transfer.message)
+            }
+            return res.send_ok("Transfer successful!", { transactionLog: this.formatTransaction(transfer.transactionLog!) })
+        } catch (error: unknown) {
+            res.send_internalServerError("An error occurred while processing the transfer.", error)
+
+        }
     }
 
     deposit: RequestHandler = async (req, res) => {
@@ -110,18 +127,52 @@ export class BankController {
     }
 
     getAccountInfo: RequestHandler = async (req, res) => {
-        res.send_ok("Account information retrieved!")
-    }
-    getPixKeys: RequestHandler = async (req, res) => {
-        res.send_ok("PIX keys retrieved!")
+        const { userId } = req.user!
+
+        try {
+            const accountInfo = await this.bankService.getAccountInfo(userId)
+            if (!accountInfo.success) {
+                return res.send_badRequest('Failed to retrieve account information', accountInfo.message)
+            }
+
+            res.send_ok("Account information retrieved!", { accountInfo: accountInfo.account })
+        } catch (err: unknown) {
+            res.send_internalServerError('Error fetching account information', err)
+        }
     }
 
     addPixKey: RequestHandler = async (req, res) => {
-        res.send_ok("PIX key added!")
+        const { userId } = req.user!
+        const data = req.body
+        try {
+            const validation = await this.bankRules.addPixKey(data)
+            if (!validation.success) {
+                return res.send_badRequest("Invalid Body", validation.errors)
+            }
+
+            const pixKey = await this.bankService.addPixKey(userId, data.newPixKey)
+            if (!pixKey.success) {
+                return res.send_badRequest('Error to add a new pix key', pixKey.message)
+            }
+            res.send_ok("PIX key added!")
+        } catch (err) {
+            res.send_internalServerError('Error adding new pix key', err)
+        }
     }
 
     removePixKey: RequestHandler = async (req, res) => {
-        res.send_ok("PIX key removed!")
+        const { userId } = req.user!
+        const { key } = req.params as { key: string }
+
+        try {
+            const response = await this.bankService.removePixKey(userId, key)
+            if (!response.success) {
+                return res.send_badRequest('Error to remove pix key', response.message)
+            }
+            res.send_ok("PIX key removed!")
+        } catch (err) {
+            return res.send_internalServerError('Error removing pix key', err)
+        }
     }
 
     formatTransaction(transaction: ITransactionLog) {

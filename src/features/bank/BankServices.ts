@@ -1,6 +1,6 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
 import { TransactionLogRepository } from "../../models/TransactionLogs/TransactionLogsRepository.ts"
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
 
 
@@ -8,7 +8,70 @@ export class BankService {
     constructor(private userRepository: UserRepository, private transactionLogRepository: TransactionLogRepository) {
 
     }
-    transfer() { }
+    async transfer(userId: string, pixKey: string, amount: number) {
+        const user = await this.userRepository.findById(new Types.ObjectId(userId))
+        if (!user) {
+            return { success: false, message: "User not found!" }
+        }
+        const receiver = await this.userRepository.findByPixKey(pixKey)
+        if (!receiver) {
+            return { success: false, message: "Receiver not found!" }
+        }
+        if (user.account.balance < amount) {
+            const transactionLog = await this.transactionLogRepository.create({
+                user: {
+                    userId: new Types.ObjectId(userId),
+                    userBalanceAfterTransaction: user.account.balance
+                },
+                type: TransactionType.Transfer,
+                status: TransactionStatus.Failed,
+                value: amount
+            })
+            return { success: false, message: "Insufficient account balance!", transactionLog }
+        }
+
+        const session = await mongoose.startSession()
+
+        try {
+            let transactionLog;
+
+            await session.withTransaction(async (session) => {
+                const newUserBalance = user.account.balance - amount
+                const newReceiverBalance = receiver.account.balance + amount
+
+                await this.userRepository.updateById(
+                    new Types.ObjectId(userId),
+                    { 'account.balance': newUserBalance },
+                    { session }
+                )
+                await this.userRepository.updateById(
+                    new Types.ObjectId(receiver._id),
+                    { 'account.balance': newReceiverBalance },
+                    { session }
+                )
+
+                transactionLog = await this.transactionLogRepository.createWithSession({
+                    user: { userId: new Types.ObjectId(userId), userBalanceAfterTransaction: newUserBalance },
+                    receiver: { receiverId: new Types.ObjectId(receiver._id), receiverBalanceAfterTransaction: newReceiverBalance },
+                    type: TransactionType.Transfer,
+                    status: TransactionStatus.Completed,
+                    value: amount
+                }, { session })
+
+                user.transactionLogs.push(transactionLog._id!)
+                receiver.transactionLogs.push(transactionLog._id!)
+                await user.save({ session })
+                await receiver.save({ session })
+            })
+
+            return { success: true, transactionLog }
+
+        } catch {
+            return { success: false, message: "Transfer failed due to an internal error!" }
+        } finally {
+            await session.endSession()
+        }
+    }
 
     async deposit(amount: number, userId: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
@@ -89,7 +152,7 @@ export class BankService {
     }
 
     async getTransactionById(transactionId: string, userId: string) {
-        const transaction = await this.transactionLogRepository.findOne({ _id: new Types.ObjectId(transactionId) })
+        const transaction = await this.transactionLogRepository.findById(new Types.ObjectId(transactionId))
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!transaction) {
             return { success: false, message: 'Transaction not found' }
@@ -105,13 +168,43 @@ export class BankService {
         return { success: true, transaction }
     }
 
-    getAccountInfo() { }
+    async getAccountInfo(userId: string) {
+        const user = await this.userRepository.findById(new Types.ObjectId(userId))
+        if (!user) {
+            return { success: false, message: 'User not found' }
+        }
+        return { success: true, account: user.account }
 
-    getPixKeys() { }
+    }
 
-    addPixKey() { }
+    async addPixKey(userId: string, newPixKey: string) {
+        const user = await this.userRepository.findById(new Types.ObjectId(userId))
+        if (!user) {
+            return { success: false, message: 'User not found' }
+        }
+        if (user.account.pixKeys.includes(newPixKey)) {
+            return { success: false, message: 'This pix key is already registered in your account' }
+        }
+        const pixKeyExists = await this.userRepository.pixKeyExists(newPixKey)
+        if (pixKeyExists) {
+            return { success: false, message: 'This pix key is already registered by another user' }
+        }
+        user.account.pixKeys.push(newPixKey)
+        await user.save()
+        return { success: true, message: 'PIX key added successfully' }
+    }
 
-    removePixKey() { }
-
+    async removePixKey(userId: string, pixKey: string) {
+        const user = await this.userRepository.findById(new Types.ObjectId(userId))
+        if (!user) {
+            return { success: false, message: 'User not found' }
+        }
+        if (!user.account.pixKeys.includes(pixKey)) {
+            return { success: false, message: 'PIX key not found in your account' }
+        }
+        user.account.pixKeys = user.account.pixKeys.filter((key) => key !== pixKey)
+        await user.save()
+        return { success: true, message: 'PIX key removed successfully' }
+    }
 
 }

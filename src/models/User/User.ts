@@ -10,7 +10,7 @@ const sessionSchema = new Schema<ISession>({
 })
 
 const accountSchema = new Schema<IAccount>({
-    pixKeys: { type: [String], default: [] },
+    pixKeys: { type: [String], default: [], unique: true },
     balance: { type: Number, required: false, min: [0, 'Balance cannot be negative'], default: 0 },
 })
 

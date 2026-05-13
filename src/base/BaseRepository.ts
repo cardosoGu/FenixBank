@@ -22,9 +22,12 @@ export class BaseRepository<TDocument extends IBaseInterface, TMethods = {}> {
     create(data: Partial<TDocument>) {
         return this.model.create(data)
     }
+    createWithSession(data: Partial<TDocument>, options: mongoose.SaveOptions) {
+        return this.model.create([data], options).then(([doc]) => doc)
+    }
 
-    updateById(id: Types.ObjectId, data: UpdateQuery<TDocument>) {
-        return this.model.findByIdAndUpdate(id, data, { new: true })
+    updateById(id: Types.ObjectId, data: UpdateQuery<TDocument>, options: mongoose.QueryOptions = {}) {
+        return this.model.findByIdAndUpdate(id, data, { new: true, ...options })
     }
 
     deleteById(id: Types.ObjectId) {

@@ -1,0 +1,589 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "FenixBank API",
+        "version": "1.0.0",
+        "description": "Documentacao da API do FenixBank"
+    },
+    "servers": [
+        {
+            "url": "/"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Create a new user account",
+                "description": "Creates the user, initializes the bank account, sets the refreshToken cookie, and returns an access token.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "cpf",
+                                    "password",
+                                    "pixKeys",
+                                    "balance"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Maria Silva"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria@fenixbank.com"
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "123.456.789-00"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "StrongPass123"
+                                    },
+                                    "pixKeys": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "maria@fenixbank.com"
+                                        ]
+                                    },
+                                    "balance": {
+                                        "type": "number",
+                                        "example": 250
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully"
+                    },
+                    "400": {
+                        "description": "Invalid payload or email already in use"
+                    },
+                    "401": {
+                        "description": "User already logged in"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Authenticate a user",
+                "description": "Authenticates the user, sets the refreshToken cookie, and returns an access token.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria@fenixbank.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "StrongPass123"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful"
+                    },
+                    "400": {
+                        "description": "Invalid credentials or invalid payload"
+                    },
+                    "401": {
+                        "description": "User already logged in"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/auth/sessions": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "List active sessions",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sessions retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout from the current session",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current session closed successfully"
+                    },
+                    "400": {
+                        "description": "Session not found or logout failed"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/auth/logoutAll": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout from all sessions",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All sessions closed successfully"
+                    },
+                    "400": {
+                        "description": "Logout failed"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Refresh the current session",
+                "description": "Reads the refreshToken cookie, rotates the session, and returns a new access token plus a new refreshToken cookie.",
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully"
+                    },
+                    "400": {
+                        "description": "Invalid or expired refresh token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get the authenticated user profile",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User profile retrieved successfully"
+                    },
+                    "400": {
+                        "description": "User not found"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/transfer": {
+            "post": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Transfer money to another user",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "pixKey",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "pixKey": {
+                                        "type": "string",
+                                        "example": "maria@fenixbank.com"
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 50
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transfer completed successfully"
+                    },
+                    "400": {
+                        "description": "Invalid payload or transfer failed"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/deposit": {
+            "post": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Deposit money into the authenticated account",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 100
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Deposit completed successfully"
+                    },
+                    "400": {
+                        "description": "Invalid payload or deposit failed"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/withdraw": {
+            "post": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Withdraw money from the authenticated account",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 40
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Withdraw completed successfully"
+                    },
+                    "400": {
+                        "description": "Invalid payload or insufficient balance"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/transactions": {
+            "get": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "List authenticated user transactions",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transactions retrieved successfully"
+                    },
+                    "400": {
+                        "description": "Failed to retrieve transactions"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Get a transaction by its ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "66f2e3d47e1f3b2c5a9f0d11"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction retrieved successfully"
+                    },
+                    "400": {
+                        "description": "Transaction not found or access denied"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/account": {
+            "get": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Get the authenticated account information",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account information retrieved successfully"
+                    },
+                    "400": {
+                        "description": "Failed to retrieve account information"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/pixKey": {
+            "post": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Add a new PIX key to the authenticated account",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "newPixKey"
+                                ],
+                                "properties": {
+                                    "newPixKey": {
+                                        "type": "string",
+                                        "example": "maria.new@fenixbank.com"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "PIX key added successfully"
+                    },
+                    "400": {
+                        "description": "Invalid payload or PIX key already exists"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/bank/pixKey/{key}": {
+            "delete": {
+                "tags": [
+                    "Bank"
+                ],
+                "summary": "Remove a PIX key from the authenticated account",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "key",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "maria.new@fenixbank.com"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PIX key removed successfully"
+                    },
+                    "400": {
+                        "description": "PIX key not found or removal failed"
+                    },
+                    "401": {
+                        "description": "Missing or invalid tokens"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        }
+    }
+}

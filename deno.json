@@ -2,12 +2,8 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --allow-env --allow-sys --allow-read --allow-write --allow-net --watch server.ts",
-    "start": "deno run --allow-env --allow-sys --allow-read --allow-net --watch server.ts",
     "test": "deno test -A",
-    "test:watch": "deno test -A --watch",
-    "test:coverage": "deno test -A --coverage=coverage",
-    "coverage": "deno coverage coverage",
-    "coverage:html": "deno coverage coverage --html"
+    "coverage": "deno test -A --no-check --coverage=coverage"
   },
   "imports": {
     "@std/dotenv": "jsr:@std/dotenv@^0.225.6",

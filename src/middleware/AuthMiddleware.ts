@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { Request, Response, NextFunction } from "express";
 import { jwtService } from "../utils/Jwt.ts";
 import { Types } from "mongoose";
 import { UserRepository } from "../models/User/UserRepository.ts";
@@ -15,7 +15,7 @@ export class AuthMiddleware {
 
 
     // Middleware to verify if user is logged
-    isLogged: RequestHandler = async (req, res, next) => {
+    isLogged = async (req: Request, res: Response, next: NextFunction) => {
         const accessToken = req.headers['authorization']?.split(' ')[1]
         const refreshToken = req.cookies['refreshToken']
         if (!accessToken || !refreshToken) return res.send_unauthorized("You must be logged!")
@@ -44,7 +44,7 @@ export class AuthMiddleware {
     }
 
     // Middleware to verify if user is'nt logged
-    notLogged: RequestHandler = async (req, res, next) => {
+    notLogged = async (req: Request, res: Response, next: NextFunction) => {
         const accessToken = req.headers['authorization']?.split(' ')[1]
         const refreshToken = req.cookies['refreshToken']
 

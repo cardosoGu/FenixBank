@@ -11,6 +11,9 @@ import { MockTransactionLogRepository } from "./mocks/MockBankRepository.ts";
 
 type SessionLike = {
     withTransaction: <T>(fn: (session: unknown) => Promise<T>) => Promise<T>;
+    startTransaction: () => void;
+    commitTransaction: () => Promise<void>;
+    abortTransaction: () => Promise<void>;
     endSession: () => Promise<void>;
 };
 
@@ -50,6 +53,9 @@ async function withMockedSession<T>(fn: () => Promise<T>) {
         withTransaction: async <R>(callback: (session: unknown) => Promise<R>) => {
             return await callback({});
         },
+        startTransaction: () => { },
+        commitTransaction: async () => { },
+        abortTransaction: async () => { },
         endSession: async () => { },
     };
 

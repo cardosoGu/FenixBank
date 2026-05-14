@@ -1,7 +1,7 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
 import { TransactionLogRepository } from "../../models/TransactionLogs/TransactionLogsRepository.ts"
 import mongoose, { Types } from "mongoose";
-import {  TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
+import { TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
 import throwlhos from "throwlhos";
 
 
@@ -35,41 +35,43 @@ export class BankService {
         }
 
         const session = await mongoose.startSession()
+        session.startTransaction()
 
         try {
-            const transactionLog = await session.withTransaction(async (session) => {
-                const newUserBalance = user.account.balance - amount
-                const newReceiverBalance = receiver.account.balance + amount
 
-                await this.userRepository.updateById(
-                    new Types.ObjectId(userId),
-                    { 'account.balance': newUserBalance },
-                    { session }
-                )
-                await this.userRepository.updateById(
-                    new Types.ObjectId(receiver._id),
-                    { 'account.balance': newReceiverBalance },
-                    { session }
-                )
+            const newUserBalance = user.account.balance - amount
+            const newReceiverBalance = receiver.account.balance + amount
 
-                const transactionLog = await this.transactionLogRepository.createWithSession({
-                    user: { userId: new Types.ObjectId(userId), userBalanceAfterTransaction: newUserBalance },
-                    receiver: { receiverId: new Types.ObjectId(receiver._id), receiverBalanceAfterTransaction: newReceiverBalance },
-                    type: TransactionType.TRANSFER,
-                    status: TransactionStatus.COMPLETED,
-                    value: amount
-                }, { session })
+            await this.userRepository.updateById(
+                new Types.ObjectId(userId),
+                { 'account.balance': newUserBalance },
+                { session }
+            )
+            await this.userRepository.updateById(
+                new Types.ObjectId(receiver._id),
+                { 'account.balance': newReceiverBalance },
+                { session }
+            )
 
-                user.transactionLogs.push(transactionLog._id!)
-                receiver.transactionLogs.push(transactionLog._id!)
-                await user.save({ session })
-                await receiver.save({ session })
+            const transactionLog = await this.transactionLogRepository.createWithSession({
+                user: { userId: new Types.ObjectId(userId), userBalanceAfterTransaction: newUserBalance },
+                receiver: { receiverId: new Types.ObjectId(receiver._id), receiverBalanceAfterTransaction: newReceiverBalance },
+                type: TransactionType.TRANSFER,
+                status: TransactionStatus.COMPLETED,
+                value: amount
+            }, { session })
 
-                return transactionLog
-            })
+            user.transactionLogs.push(transactionLog._id!)
+            receiver.transactionLogs.push(transactionLog._id!)
+            await user.save({ session })
+            await receiver.save({ session })
 
+            await session.commitTransaction()
             return { success: true, transactionLog }
+            
         } catch {
+
+            await session.abortTransaction()
             throw throwlhos.default.err_internalServerError("An error occurred while processing the transfer.")
         } finally {
             await session.endSession()

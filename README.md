@@ -36,6 +36,25 @@ REST API for the **FenixBank** digital banking platform.
 
 ---
 
+# 🧠 How run with Deno
+
+1. Clone the repository
+```
+git clone https://github.com/cardosoGu/FenixBank.git
+```
+2. Install dependencies:
+```
+deno install
+```
+3. Run tests
+```
+deno run coverage
+```
+4. Start Server
+```
+deno run dev
+```
+
 # 🔐 Authentication
 
 ### Protected routes require:
@@ -138,19 +157,5 @@ Authorization: Bearer <accessToken>
 | `GET` | `/api/bank/transactions/:transactionId` | ✅ | Get transaction details |
 | `POST` | `/api/bank/pixKey` | ✅ | Add Pix key |
 | `DELETE` | `/api/bank/pixKey/:key` | ✅ | Remove Pix key |
-
----
-
-# 📡 HTTP Status Codes
-
-| Code | Description |
-|---|---|
-| `200` | Success |
-| `201` | Resource created |
-| `400` | Bad request |
-| `401` | Unauthorized |
-| `403` | Forbidden |
-| `404` | Not found |
-| `500` | Internal server error |
 
 ---

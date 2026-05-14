@@ -1,0 +1,39 @@
+// deno-lint-ignore no-import-prefix
+import {
+    assertEquals,
+    assertThrows,
+} from "https://deno.land/std@0.220.0/assert/mod.ts";
+import { jwtService } from "./Jwt.ts";
+
+Deno.test("JWTService - should generate and verify access token", () => {
+    const userId = "507f1f77bcf86cd799439011";
+
+    const token = jwtService.generateAccessToken(userId);
+    const payload = jwtService.verifyAccessToken(token);
+
+    assertEquals(payload.sub, userId);
+});
+
+Deno.test("JWTService - should generate and verify refresh token", () => {
+    const userId = "507f1f77bcf86cd799439012";
+
+    const token = jwtService.generateRefreshToken(userId);
+    const payload = jwtService.verifyRefreshToken(token);
+
+    assertEquals(payload.sub, userId);
+});
+
+Deno.test("JWTService - parseExpiresInToMs should parse all supported units", () => {
+    assertEquals(jwtService.parseExpiresInToMs("1d"), 86400000);
+    assertEquals(jwtService.parseExpiresInToMs("2h"), 7200000);
+    assertEquals(jwtService.parseExpiresInToMs("3m"), 180000);
+    assertEquals(jwtService.parseExpiresInToMs("4s"), 4000);
+});
+
+Deno.test("JWTService - parseExpiresInToMs should throw for invalid unit", () => {
+    assertThrows(
+        () => jwtService.parseExpiresInToMs("10x"),
+        Error,
+        "Invalid expiresIn format",
+    );
+});

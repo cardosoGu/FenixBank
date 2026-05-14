@@ -2,14 +2,14 @@ import { IBaseInterface } from "../../base/IBaseInterface.ts";
 import { Types } from "mongoose";
 
 export enum TransactionType {
-    Deposit = 'deposit',
-    Withdraw = 'withdraw',
-    Transfer = 'transfer'
+    DEPOSIT = 'DEPOSIT',
+    WITHDRAW = 'WITHDRAW',
+    TRANSFER = 'TRANSFER'
 }
 export enum TransactionStatus {
-    Pending = 'pending',
-    Completed = 'completed',
-    Failed = 'failed'
+    PENDING = 'PENDING',
+    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED'
 }
 
 export interface ITransactionUser {

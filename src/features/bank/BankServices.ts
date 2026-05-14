@@ -1,7 +1,7 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
 import { TransactionLogRepository } from "../../models/TransactionLogs/TransactionLogsRepository.ts"
 import mongoose, { Types } from "mongoose";
-import { TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
+import {  TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
 import throwlhos from "throwlhos";
 
 
@@ -27,8 +27,8 @@ export class BankService {
                     userId: new Types.ObjectId(userId),
                     userBalanceAfterTransaction: user.account.balance
                 },
-                type: TransactionType.Transfer,
-                status: TransactionStatus.Failed,
+                type: TransactionType.TRANSFER,
+                status: TransactionStatus.FAILED,
                 value: amount
             })
             throw throwlhos.default.err_badRequest("Insufficient account balance!", transactionLog)
@@ -37,9 +37,7 @@ export class BankService {
         const session = await mongoose.startSession()
 
         try {
-            let transactionLog;
-
-            await session.withTransaction(async (session) => {
+            const transactionLog = await session.withTransaction(async (session) => {
                 const newUserBalance = user.account.balance - amount
                 const newReceiverBalance = receiver.account.balance + amount
 
@@ -54,11 +52,11 @@ export class BankService {
                     { session }
                 )
 
-                transactionLog = await this.transactionLogRepository.createWithSession({
+                const transactionLog = await this.transactionLogRepository.createWithSession({
                     user: { userId: new Types.ObjectId(userId), userBalanceAfterTransaction: newUserBalance },
                     receiver: { receiverId: new Types.ObjectId(receiver._id), receiverBalanceAfterTransaction: newReceiverBalance },
-                    type: TransactionType.Transfer,
-                    status: TransactionStatus.Completed,
+                    type: TransactionType.TRANSFER,
+                    status: TransactionStatus.COMPLETED,
                     value: amount
                 }, { session })
 
@@ -66,10 +64,11 @@ export class BankService {
                 receiver.transactionLogs.push(transactionLog._id!)
                 await user.save({ session })
                 await receiver.save({ session })
+
+                return transactionLog
             })
 
             return { success: true, transactionLog }
-
         } catch {
             throw throwlhos.default.err_internalServerError("An error occurred while processing the transfer.")
         } finally {
@@ -83,6 +82,9 @@ export class BankService {
             throw throwlhos.default.err_notFound("User not found!")
         }
 
+        if (amount <= 0 || amount > 10000) {
+            throw throwlhos.default.err_badRequest("Invalid deposit amount!")
+        }
         const newBalance = user.account.balance + amount
 
         await this.userRepository.updateById(new Types.ObjectId(userId), { 'account.balance': newBalance })
@@ -92,8 +94,8 @@ export class BankService {
                 userId: new Types.ObjectId(userId),
                 userBalanceAfterTransaction: newBalance
             },
-            type: TransactionType.Deposit,
-            status: TransactionStatus.Completed,
+            type: TransactionType.DEPOSIT,
+            status: TransactionStatus.COMPLETED,
             value: amount
         })
         user.transactionLogs.push(transactionLog._id!)
@@ -117,8 +119,8 @@ export class BankService {
                     userId: new Types.ObjectId(userId),
                     userBalanceAfterTransaction: user.account.balance
                 },
-                type: TransactionType.Withdraw,
-                status: TransactionStatus.Failed,
+                type: TransactionType.WITHDRAW,
+                status: TransactionStatus.FAILED,
                 value: amount
             })
 
@@ -132,13 +134,13 @@ export class BankService {
                 userId: new Types.ObjectId(userId),
                 userBalanceAfterTransaction: newBalance
             },
-            type: TransactionType.Withdraw,
-            status: TransactionStatus.Pending,
+            type: TransactionType.WITHDRAW,
+            status: TransactionStatus.PENDING,
             value: amount
         })
 
         await this.userRepository.updateById(new Types.ObjectId(userId), { 'account.balance': newBalance })
-        await this.transactionLogRepository.updateById(transactionLog._id!, { status: TransactionStatus.Completed })
+        await this.transactionLogRepository.updateById(transactionLog._id!, { status: TransactionStatus.COMPLETED })
         user.transactionLogs.push(transactionLog._id!)
         await user.save()
 
@@ -146,6 +148,10 @@ export class BankService {
     }
 
     async getTransactions(userId: string) {
+        const user = await this.userRepository.findById(new Types.ObjectId(userId))
+        if (!user) {
+            throw throwlhos.default.err_notFound("User not found!")
+        }
         const transactions = await this.transactionLogRepository.find({ 'user.userId': new Types.ObjectId(userId) })
         if (!transactions) {
             throw throwlhos.default.err_notFound("No transactions found for this user!")

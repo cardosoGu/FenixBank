@@ -26,15 +26,15 @@ class TransactionLogClass implements ITransactionLog {
         this.type = data.type
     }
     get isCompleted(): boolean {
-        return this.status === TransactionStatus.Completed
+        return this.status === TransactionStatus.COMPLETED
     }
 
     get isTransfer(): boolean {
-        return this.type === TransactionType.Transfer
+        return this.type === TransactionType.TRANSFER
     }
 
     get hasFailed(): boolean {
-        return this.status === TransactionStatus.Failed
+        return this.status === TransactionStatus.FAILED
     }
 }
 
@@ -46,11 +46,11 @@ class TransactionLogSchemaClass extends BaseSchema {
             receiver: {
                 type: transactionReceiverSchema, default: null,
                 required: function (this: ITransactionLog) {
-                    return this.type === TransactionType.Transfer
+                    return this.type === TransactionType.TRANSFER
                 },
             },
             value: { type: Number, required: true, min: [0, 'Transaction value cant be negative'], default: null },
-            status: { type: String, enum: Object.values(TransactionStatus), default: TransactionStatus.Pending, required: true },
+            status: { type: String, enum: Object.values(TransactionStatus), default: TransactionStatus.PENDING, required: true },
             type: { type: String, enum: Object.values(TransactionType), required: true, default: null },
         })
     }

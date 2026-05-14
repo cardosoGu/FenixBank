@@ -39,7 +39,7 @@ export class AuthService {
             password: data.password,
             account: {
                 pixKeys: [...data.pixKeys, data.email, data.cpf],
-                balance: data.balance,
+                balance: data.balance ?? 0,
             },
         });
         if (!user) {
@@ -57,12 +57,12 @@ export class AuthService {
     async login(data: IUserLoginDTO, clientIp: string, userAgent: string) {
         const user = await this.userRepository.findByEmail(data.email);
         if (!user) {
-            throw throwlhos.default.err_unauthorized("Invalid email or password!");
+            throw throwlhos.default.err_unauthorized("Invalid credentials!");
         }
 
         const isPasswordValid = await user.passwordMatches(data.password);
         if (!isPasswordValid) {
-            throw throwlhos.default.err_unauthorized("Invalid email or password!");
+            throw throwlhos.default.err_unauthorized("Invalid credentials!");
         }
 
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
@@ -88,11 +88,16 @@ export class AuthService {
 
         return { success: true, message: "User logged out successfully!" };
     }
-    async logoutAll(userId: string) {
+    async logoutAll(userId: string, refreshToken: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!");
         }
+        const actualSession = user.sessions.some((session: ISession) => session.refreshToken === hashToken(refreshToken))
+        if (!actualSession) {
+            throw throwlhos.default.err_notFound("Session not found!");
+        }
+
 
         await this.userRepository.deleteAllSessionsByUserId(userId)
 

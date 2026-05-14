@@ -1,7 +1,7 @@
 {
   "nodeModulesDir": "auto",
   "tasks": {
-    "dev": "deno run --allow-env --allow-sys --allow-read --allow-write --allow-net --watch server.ts",
+    "dev": "deno run --allow-env --allow-sys --allow-read --allow-write --allow-net --allow-ffi --watch server.ts",
     "test": "deno test -A",
     "coverage": "deno test -A --no-check --coverage=coverage"
   },

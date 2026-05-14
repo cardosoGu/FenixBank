@@ -1,6 +1,6 @@
 import app from './app.ts'
 import { env } from './config/Env.ts'
-import { DBConnection } from "./config/Db.ts";
+import { DBConnection } from "./config/db.ts";
 import throwlhos from 'throwlhos'
 
 async function main() {
@@ -11,8 +11,8 @@ async function main() {
     // Start the server
     await app.listen(env.PORT, () => {
       console.log(`Server is running on port ${env.PORT} 🚀`)
-      console.log(`https://localhost:${env.PORT}/`)
-      console.log(`https://localhost:${env.PORT}/api-docs`)
+      console.log(`http://localhost:${env.PORT}/`)
+      console.log(`http://localhost:${env.PORT}/api-docs`)
     })
 
 

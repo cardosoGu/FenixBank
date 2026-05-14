@@ -12,6 +12,7 @@ async function main() {
     await app.listen(env.PORT, () => {
       console.log(`Server is running on port ${env.PORT} 🚀`)
       console.log(`https://localhost:${env.PORT}/`)
+      console.log(`https://localhost:${env.PORT}/api-docs`)
     })
 
 

@@ -1,94 +1,228 @@
 {
-    "openapi": "3.0.0",
+    "openapi": "3.0.3",
     "info": {
         "title": "FenixBank API",
+        "description": "API REST da **FenixBank**, uma plataforma bancária digital que oferece serviços de autenticação, gerenciamento de conta, transações financeiras e integração com Pix.\n\n## Autenticação\nA maioria dos endpoints requer um token JWT enviado no header `Authorization: Bearer <token>`.\nO token é obtido ao fazer login via `POST /api/auth/login`.\n\n## Fluxo básico\n1. Crie uma conta via `POST /api/auth/register`\n2. Faça login via `POST /api/auth/login` e guarde o token retornado\n3. Use o token no header `Authorization` para acessar os demais endpoints",
         "version": "1.0.0",
-        "description": "Documentacao da API do FenixBank"
+        "contact": {
+            "name": "FenixBank"
+        }
     },
     "servers": [
         {
-            "url": "/"
+            "url": "/",
+            "description": "Servidor padrão"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Registro, login, sessões e perfil do usuário"
+        },
+        {
+            "name": "Bank - Account",
+            "description": "Informações da conta bancária"
+        },
+        {
+            "name": "Bank - Transactions",
+            "description": "Consulta de transações"
+        },
+        {
+            "name": "Bank - Operations",
+            "description": "Depósito, saque e transferência via Pix"
+        },
+        {
+            "name": "Bank - Pix Keys",
+            "description": "Gerenciamento de chaves Pix"
         }
     ],
     "components": {
         "securitySchemes": {
-            "bearerAuth": {
+            "BearerAuth": {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT"
             }
+        },
+        "schemas": {
+            "RegisterRequest": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "email",
+                    "cpf",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Maria Silva"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "maria@fenixbank.com"
+                    },
+                    "cpf": {
+                        "type": "string",
+                        "example": "181.990.300-11"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "StrongPass123"
+                    },
+                    "pixKeys": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "maria@fenixbank.com"
+                        ]
+                    },
+                    "balance": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "Saldo inicial da conta (opcional)",
+                        "example": 250
+                    }
+                }
+            },
+            "LoginRequest": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "maria@fenixbank.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "StrongPass123"
+                    }
+                }
+            },
+            "AddPixKeyRequest": {
+                "type": "object",
+                "required": [
+                    "newPixKey"
+                ],
+                "properties": {
+                    "newPixKey": {
+                        "type": "string",
+                        "example": "maria.new@fenixbank.com"
+                    }
+                }
+            },
+            "AmountRequest": {
+                "type": "object",
+                "required": [
+                    "amount"
+                ],
+                "properties": {
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 100
+                    }
+                }
+            },
+            "TransferRequest": {
+                "type": "object",
+                "required": [
+                    "pixKey",
+                    "amount"
+                ],
+                "properties": {
+                    "pixKey": {
+                        "type": "string",
+                        "description": "Chave Pix do destinatário",
+                        "example": "11999999999"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 50
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Mensagem de erro descritiva"
+                    }
+                }
+            }
         }
     },
+    "security": [
+        {
+            "BearerAuth": []
+        }
+    ],
     "paths": {
         "/api/auth/register": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Create a new user account",
-                "description": "Creates the user, initializes the bank account, sets the refreshToken cookie, and returns an access token.",
+                "summary": "Registrar novo usuário",
+                "description": "Cria uma nova conta de usuário na plataforma. Não requer autenticação prévia.",
+                "security": [],
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "required": [
-                                    "name",
-                                    "email",
-                                    "cpf",
-                                    "password",
-                                    "pixKeys",
-                                    "balance"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Maria Silva"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "maria@fenixbank.com"
-                                    },
-                                    "cpf": {
-                                        "type": "string",
-                                        "example": "123.456.789-00"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "StrongPass123"
-                                    },
-                                    "pixKeys": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        },
-                                        "example": [
-                                            "maria@fenixbank.com"
-                                        ]
-                                    },
-                                    "balance": {
-                                        "type": "number",
-                                        "example": 250
-                                    }
-                                }
+                                "$ref": "#/components/schemas/RegisterRequest"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "User created successfully"
+                        "description": "Usuário criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User created successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Invalid payload or email already in use"
+                        "description": "Payload inválido ou e-mail já cadastrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "User already logged in"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Usuário já está logado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -98,45 +232,56 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Authenticate a user",
-                "description": "Authenticates the user, sets the refreshToken cookie, and returns an access token.",
+                "summary": "Realizar login",
+                "description": "Autentica o usuário e retorna um token JWT para uso nas demais requisições.",
+                "security": [],
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "required": [
-                                    "email",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "maria@fenixbank.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "StrongPass123"
-                                    }
-                                }
+                                "$ref": "#/components/schemas/LoginRequest"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Login successful"
+                        "description": "Login realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "description": "Token JWT de autenticação",
+                                            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Invalid credentials or invalid payload"
+                        "description": "Credenciais inválidas ou payload incorreto",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "User already logged in"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Usuário já está logado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -146,21 +291,50 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "List active sessions",
+                "summary": "Listar sessões ativas",
+                "description": "Retorna todas as sessões ativas do usuário autenticado.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Sessions retrieved successfully"
+                        "description": "Sessões recuperadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sessions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Token ausente ou inválido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -170,24 +344,39 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Logout from the current session",
+                "summary": "Encerrar sessão atual",
+                "description": "Invalida o token da sessão atual do usuário.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Current session closed successfully"
-                    },
-                    "400": {
-                        "description": "Session not found or logout failed"
+                        "description": "Sessão atual encerrada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Current session closed successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -197,24 +386,39 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Logout from all sessions",
+                "summary": "Encerrar todas as sessões",
+                "description": "Invalida todos os tokens ativos do usuário em todos os dispositivos.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "All sessions closed successfully"
-                    },
-                    "400": {
-                        "description": "Logout failed"
+                        "description": "Todas as sessões encerradas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "All sessions closed successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -224,17 +428,39 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Refresh the current session",
-                "description": "Reads the refreshToken cookie, rotates the session, and returns a new access token plus a new refreshToken cookie.",
+                "summary": "Renovar token da sessão atual",
+                "description": "Gera um novo token JWT para a sessão atual, sem precisar fazer login novamente.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Token refreshed successfully"
+                        "description": "Token renovado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Invalid or expired refresh token"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -244,232 +470,51 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Get the authenticated user profile",
+                "summary": "Obter perfil do usuário autenticado",
+                "description": "Retorna os dados do perfil do usuário atualmente autenticado.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User profile retrieved successfully"
-                    },
-                    "400": {
-                        "description": "User not found"
-                    },
-                    "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/api/bank/transfer": {
-            "post": {
-                "tags": [
-                    "Bank"
-                ],
-                "summary": "Transfer money to another user",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "pixKey",
-                                    "amount"
-                                ],
-                                "properties": {
-                                    "pixKey": {
-                                        "type": "string",
-                                        "example": "maria@fenixbank.com"
-                                    },
-                                    "amount": {
-                                        "type": "number",
-                                        "example": 50
+                        "description": "Perfil retornado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Maria Silva"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "maria@fenixbank.com"
+                                        },
+                                        "cpf": {
+                                            "type": "string",
+                                            "example": "181.990.300-11"
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Transfer completed successfully"
                     },
                     "400": {
-                        "description": "Invalid payload or transfer failed"
-                    },
-                    "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/api/bank/deposit": {
-            "post": {
-                "tags": [
-                    "Bank"
-                ],
-                "summary": "Deposit money into the authenticated account",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "amount"
-                                ],
-                                "properties": {
-                                    "amount": {
-                                        "type": "number",
-                                        "example": 100
-                                    }
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
                                 }
                             }
                         }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Deposit completed successfully"
-                    },
-                    "400": {
-                        "description": "Invalid payload or deposit failed"
-                    },
-                    "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/api/bank/withdraw": {
-            "post": {
-                "tags": [
-                    "Bank"
-                ],
-                "summary": "Withdraw money from the authenticated account",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "amount"
-                                ],
-                                "properties": {
-                                    "amount": {
-                                        "type": "number",
-                                        "example": 40
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Withdraw completed successfully"
-                    },
-                    "400": {
-                        "description": "Invalid payload or insufficient balance"
-                    },
-                    "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/api/bank/transactions": {
-            "get": {
-                "tags": [
-                    "Bank"
-                ],
-                "summary": "List authenticated user transactions",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transactions retrieved successfully"
-                    },
-                    "400": {
-                        "description": "Failed to retrieve transactions"
-                    },
-                    "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/api/bank/transactions/{id}": {
-            "get": {
-                "tags": [
-                    "Bank"
-                ],
-                "summary": "Get a transaction by its ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "66f2e3d47e1f3b2c5a9f0d11"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transaction retrieved successfully"
-                    },
-                    "400": {
-                        "description": "Transaction not found or access denied"
-                    },
-                    "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
                     }
                 }
             }
@@ -477,39 +522,221 @@
         "/api/bank/account": {
             "get": {
                 "tags": [
-                    "Bank"
+                    "Bank - Account"
                 ],
-                "summary": "Get the authenticated account information",
+                "summary": "Obter informações da conta",
+                "description": "Retorna os dados da conta bancária do usuário autenticado, incluindo saldo e chaves Pix.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Account information retrieved successfully"
+                        "description": "Informações da conta retornadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "balance": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 250.00
+                                        },
+                                        "pixKeys": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "maria@fenixbank.com"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Failed to retrieve account information"
+                        "description": "Falha ao recuperar informações da conta",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
         },
-        "/api/bank/pixKey": {
-            "post": {
+        "/api/bank/transactions": {
+            "get": {
                 "tags": [
-                    "Bank"
+                    "Bank - Transactions"
                 ],
-                "summary": "Add a new PIX key to the authenticated account",
+                "summary": "Listar transações do usuário",
+                "description": "Retorna o histórico de transações da conta do usuário autenticado.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transações retornadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "transactions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "deposit",
+                                                            "withdraw",
+                                                            "transfer"
+                                                        ]
+                                                    },
+                                                    "amount": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bank/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Bank - Transactions"
+                ],
+                "summary": "Obter transação por ID",
+                "description": "Retorna os detalhes de uma transação específica pelo seu identificador. O usuário só pode consultar suas próprias transações.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID único da transação",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transação retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "deposit",
+                                                "withdraw",
+                                                "transfer"
+                                            ]
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Transação não encontrada ou sem permissão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bank/deposit": {
+            "post": {
+                "tags": [
+                    "Bank - Operations"
+                ],
+                "summary": "Realizar depósito",
+                "description": "Deposita um valor na conta do usuário autenticado.\n**Limite:** O valor máximo por depósito é de **R$ 500,00**.",
+                "security": [
+                    {
+                        "BearerAuth": []
                     }
                 ],
                 "requestBody": {
@@ -517,32 +744,257 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "required": [
-                                    "newPixKey"
-                                ],
-                                "properties": {
-                                    "newPixKey": {
-                                        "type": "string",
-                                        "example": "maria.new@fenixbank.com"
-                                    }
-                                }
+                                "$ref": "#/components/schemas/AmountRequest"
+                            },
+                            "example": {
+                                "amount": 100
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "PIX key added successfully"
+                        "description": "Depósito realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Deposit completed successfully"
+                                        },
+                                        "balance": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Invalid payload or PIX key already exists"
+                        "description": "Payload inválido ou valor acima do limite de R$ 500,00",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Missing or invalid tokens"
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bank/withdraw": {
+            "post": {
+                "tags": [
+                    "Bank - Operations"
+                ],
+                "summary": "Realizar saque",
+                "description": "Saca um valor da conta do usuário autenticado. O saldo deve ser suficiente para cobrir o valor solicitado.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AmountRequest"
+                            },
+                            "example": {
+                                "amount": 40
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Saque realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Withdraw completed successfully"
+                                        },
+                                        "balance": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
-                    "500": {
-                        "description": "Internal server error"
+                    "400": {
+                        "description": "Payload inválido ou saldo insuficiente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bank/transfer": {
+            "post": {
+                "tags": [
+                    "Bank - Operations"
+                ],
+                "summary": "Realizar transferência via Pix",
+                "description": "Transfere um valor para outro usuário utilizando sua chave Pix.\n- O remetente não pode transferir para si mesmo.\n- O saldo deve ser suficiente para cobrir o valor.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransferRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transferência realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transfer completed successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Payload inválido ou destinatário não encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Não é possível transferir para si mesmo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bank/pixKey": {
+            "post": {
+                "tags": [
+                    "Bank - Pix Keys"
+                ],
+                "summary": "Adicionar chave Pix",
+                "description": "Adiciona uma nova chave Pix à conta do usuário autenticado.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddPixKeyRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chave Pix adicionada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "PIX key added successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Payload inválido ou chave Pix já existe",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -550,37 +1002,63 @@
         "/api/bank/pixKey/{key}": {
             "delete": {
                 "tags": [
-                    "Bank"
+                    "Bank - Pix Keys"
                 ],
-                "summary": "Remove a PIX key from the authenticated account",
+                "summary": "Remover chave Pix",
+                "description": "Remove uma chave Pix existente da conta do usuário autenticado.",
                 "security": [
                     {
-                        "bearerAuth": []
+                        "BearerAuth": []
                     }
                 ],
                 "parameters": [
                     {
-                        "in": "path",
                         "name": "key",
+                        "in": "path",
                         "required": true,
+                        "description": "Chave Pix a ser removida (e-mail, CPF, telefone ou chave aleatória)",
                         "schema": {
                             "type": "string"
                         },
-                        "example": "maria.new@fenixbank.com"
+                        "example": "maria@fenixbank.com"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "PIX key removed successfully"
+                        "description": "Chave Pix removida com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "PIX key removed successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "PIX key not found or removal failed"
+                        "description": "Chave Pix não encontrada ou falha na remoção",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Missing or invalid tokens"
-                    },
-                    "500": {
-                        "description": "Internal server error"
+                        "description": "Login necessário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }

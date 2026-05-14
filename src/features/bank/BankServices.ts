@@ -2,6 +2,7 @@ import { UserRepository } from "../../models/User/UserRepository.ts";
 import { TransactionLogRepository } from "../../models/TransactionLogs/TransactionLogsRepository.ts"
 import mongoose, { Types } from "mongoose";
 import { TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
+import throwlhos from "throwlhos";
 
 
 export class BankService {
@@ -11,11 +12,14 @@ export class BankService {
     async transfer(userId: string, pixKey: string, amount: number) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
-            return { success: false, message: "User not found!" }
+            throw throwlhos.default.err_notFound("User not found!")
         }
         const receiver = await this.userRepository.findByPixKey(pixKey)
         if (!receiver) {
-            return { success: false, message: "Receiver not found!" }
+            throw throwlhos.default.err_notFound("Receiver not found!")
+        }
+        if (receiver._id.toString() === userId) {
+            throw throwlhos.default.err_badRequest("You can't transfer to yourself!")
         }
         if (user.account.balance < amount) {
             const transactionLog = await this.transactionLogRepository.create({
@@ -27,7 +31,7 @@ export class BankService {
                 status: TransactionStatus.Failed,
                 value: amount
             })
-            return { success: false, message: "Insufficient account balance!", transactionLog }
+            throw throwlhos.default.err_badRequest("Insufficient account balance!", transactionLog)
         }
 
         const session = await mongoose.startSession()
@@ -67,7 +71,7 @@ export class BankService {
             return { success: true, transactionLog }
 
         } catch {
-            return { success: false, message: "Transfer failed due to an internal error!" }
+            throw throwlhos.default.err_internalServerError("An error occurred while processing the transfer.")
         } finally {
             await session.endSession()
         }
@@ -76,7 +80,7 @@ export class BankService {
     async deposit(amount: number, userId: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
-            return { success: false, message: "User not found!" }
+            throw throwlhos.default.err_notFound("User not found!")
         }
 
         const newBalance = user.account.balance + amount
@@ -104,8 +108,7 @@ export class BankService {
     async withdraw(amount: number, userId: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
-            return { success: false, message: "User not found!" }
-
+            throw throwlhos.default.err_notFound("User not found!")
         }
         //verify if user has sufficient balance for the withdraw
         if (user.account.balance < amount) {
@@ -119,7 +122,7 @@ export class BankService {
                 value: amount
             })
 
-            return { success: false, message: "Insufficient account balance!", transactionLog }
+            throw throwlhos.default.err_badRequest("Insufficient account balance!", transactionLog)
         }
 
         //create a transaction log with status pending
@@ -145,7 +148,7 @@ export class BankService {
     async getTransactions(userId: string) {
         const transactions = await this.transactionLogRepository.find({ 'user.userId': new Types.ObjectId(userId) })
         if (!transactions) {
-            return { success: false, message: 'You dont have transaction logs' }
+            throw throwlhos.default.err_notFound("No transactions found for this user!")
         }
 
         return { success: true, transactions }
@@ -155,13 +158,13 @@ export class BankService {
         const transaction = await this.transactionLogRepository.findById(new Types.ObjectId(transactionId))
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!transaction) {
-            return { success: false, message: 'Transaction not found' }
+            throw throwlhos.default.err_notFound("Transaction not found")
         }
         if (!user) {
-            return { success: false, message: 'User not found' }
+            throw throwlhos.default.err_notFound("User not found")
         }
         if (transaction.user.userId.toString() !== userId && transaction.receiver?.receiverId.toString() !== userId) {
-            return { success: false, message: 'You dont have permission to access this transaction log' }
+            throw throwlhos.default.err_forbidden("You don't have permission to access this transaction log")
         }
 
 
@@ -171,7 +174,7 @@ export class BankService {
     async getAccountInfo(userId: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
-            return { success: false, message: 'User not found' }
+            throw throwlhos.default.err_notFound("User not found")
         }
         return { success: true, account: user.account }
 
@@ -180,14 +183,14 @@ export class BankService {
     async addPixKey(userId: string, newPixKey: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
-            return { success: false, message: 'User not found' }
+            throw throwlhos.default.err_notFound("User not found")
         }
         if (user.account.pixKeys.includes(newPixKey)) {
-            return { success: false, message: 'This pix key is already registered in your account' }
+            throw throwlhos.default.err_badRequest('This pix key is already registered in your account')
         }
         const pixKeyExists = await this.userRepository.pixKeyExists(newPixKey)
         if (pixKeyExists) {
-            return { success: false, message: 'This pix key is already registered by another user' }
+            throw throwlhos.default.err_badRequest('This pix key is already registered by another user')
         }
         user.account.pixKeys.push(newPixKey)
         await user.save()
@@ -197,10 +200,10 @@ export class BankService {
     async removePixKey(userId: string, pixKey: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
-            return { success: false, message: 'User not found' }
+            throw throwlhos.default.err_notFound("User not found")
         }
         if (!user.account.pixKeys.includes(pixKey)) {
-            return { success: false, message: 'PIX key not found in your account' }
+            throw throwlhos.default.err_badRequest('PIX key not found in your account')
         }
         user.account.pixKeys = user.account.pixKeys.filter((key) => key !== pixKey)
         await user.save()

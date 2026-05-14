@@ -19,11 +19,11 @@ class UserSchemaClass extends BaseSchema {
     constructor() {
         super({
             name: { type: String, required: true, default: null },
-            email: { type: String, required: true, unique: true },
-            cpf: { type: String, required: true, unique: true },
+            email: { type: String, required: true, unique: true, default: null },
+            cpf: { type: String, required: true, unique: true, default: null, set: (cpf: string) => cpf.replace(/\D/g, '') },
             role: { type: String, enum: Object.values(UserRole), default: UserRole.Customer },
             password: { type: String, required: true, default: null },
-            account: { type: accountSchema, required: true },
+            account: { type: accountSchema, required: true, default: {} },
             sessions: { type: [sessionSchema], default: [] },
             transactionLogs: [{ type: Schema.Types.ObjectId, ref: 'TransactionLog', default: [] }],
         })

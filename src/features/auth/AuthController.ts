@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express'
 import { AuthService, IUserDTO } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
+import { handleHttpError } from "../HttpErrorHandle.ts";
 export class AuthController {
     constructor(authService: AuthService, authRules: AuthRules) {
         this.authService = authService;
@@ -17,16 +18,9 @@ export class AuthController {
         try {
 
             // request checker validation
-            const validation = this.authRules.login(data)
-            if (!validation.success) {
-                return res.send_badRequest("Invalid Body", validation.errors)
-            }
+            this.authRules.login(data)
 
             const user = await this.authService.login(data, clientIp, userAgent)
-            if (!user.success) {
-                return res.send_badRequest(user.message)
-            }
-
             // set Refresh Token in HttpOnly cookie and return Access Token
             res.cookie('refreshToken', user.refreshToken, {
                 httpOnly: true,
@@ -38,7 +32,7 @@ export class AuthController {
             res.send_ok("Login successfully!", { accessToken: user.accessToken })
 
         } catch (error: unknown) {
-            return res.send_internalServerError("Error logging in", error)
+            return handleHttpError(res, error)
         }
     }
 
@@ -48,16 +42,9 @@ export class AuthController {
             const userAgent = req.headers['user-agent'] ?? 'unknown';
             const data = req.body
 
-            const validation = this.authRules.register(data)
-            if (!validation.success) {
-                return res.send_badRequest("Invalid Body", validation.errors)
-            }
+            this.authRules.register(data)
 
             const user = await this.authService.register(data, clientIp, userAgent)
-            if (!user.success) {
-                return res.send_badRequest(user.message)
-            }
-
             res.cookie('refreshToken', user.refreshToken, {
                 httpOnly: true,
                 secure: true,
@@ -67,7 +54,7 @@ export class AuthController {
             });
             res.send_created("User created successfully!", { user: { name: user.user?.name, email: user.user?.email }, accessToken: user.accessToken })
         } catch (error: unknown) {
-            return res.send_internalServerError("Error creating user", error)
+            return handleHttpError(res, error)
         }
     }
 
@@ -76,31 +63,24 @@ export class AuthController {
             const { userId } = req.user!
             const refreshToken = req.cookies['refreshToken']
 
-            const deleteSession = await this.authService.logout(userId, refreshToken)
-            if (!deleteSession.success) {
-                return res.send_badRequest(deleteSession.message)
-            }
+            await this.authService.logout(userId, refreshToken)
 
             res.clearCookie('refreshToken');
             res.send_ok("Logout with success!")
         } catch (error: unknown) {
-            return res.send_internalServerError("Error logging out", error)
+            return handleHttpError(res, error)
         }
     }
 
     logoutAll: RequestHandler = async (req, res) => {
         try {
             const { userId } = req.user!
-            const deleteSession = await this.authService.logoutAll(userId)
-
-            if (!deleteSession.success) {
-                return res.send_badRequest(deleteSession.message)
-            }
+            await this.authService.logoutAll(userId)
 
             res.clearCookie('refreshToken');
             res.send_ok("Logout all sessions with success!")
         } catch (error: unknown) {
-            return res.send_internalServerError("Error logging out", error)
+            return handleHttpError(res, error)
         }
     }
 
@@ -111,10 +91,6 @@ export class AuthController {
 
         try {
             const user = await this.authService.refresh(refreshToken, clientIp, userAgent);
-            if (!user.success) {
-                res.clearCookie('refreshToken');
-                return res.send_badRequest(user.message)
-            }
 
             // set Refresh Token in HttpOnly cookie and return Access Token
             res.cookie('refreshToken', user.refreshToken, {
@@ -127,7 +103,7 @@ export class AuthController {
             res.send_ok("Token refreshed successfully!", { accessToken: user.accessToken })
         } catch (error: unknown) {
             res.clearCookie('refreshToken');
-            return res.send_internalServerError("Error refreshing token", error)
+            return handleHttpError(res, error)
         }
     }
 
@@ -136,9 +112,6 @@ export class AuthController {
 
         try {
             const user = await this.authService.me(userId)
-            if (!user.user) {
-                return res.send_badRequest(user.message)
-            }
 
             const userInfo: Omit<IUserDTO, 'password'> = {
                 name: user.user.name,
@@ -150,7 +123,7 @@ export class AuthController {
 
             res.send_ok(user.message, { user: userInfo })
         } catch (error: unknown) {
-            return res.send_internalServerError("Error fetching user info", error)
+            return handleHttpError(res, error)
         }
     }
 
@@ -159,9 +132,6 @@ export class AuthController {
 
         try {
             const user = await this.authService.sessions(userId)
-            if (!user.success) {
-                return res.send_badRequest(user.message)
-            }
 
             const formattedSessions = user.sessions?.map(session => ({
                 clientIp: session.clientIp,
@@ -169,7 +139,7 @@ export class AuthController {
             }))
             res.send_ok(user.message, { sessions: formattedSessions })
         } catch (error: unknown) {
-            return res.send_internalServerError("Error fetching session info", error)
+            return handleHttpError(res, error)
         }
     }
 }

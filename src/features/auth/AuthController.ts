@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express'
 import { AuthService, IUserDTO } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
-import { handleHttpError } from "../HttpErrorHandle.ts";
+import { handleHttpError } from "../../utils/HttpErrorHandle.ts";
 export class AuthController {
     constructor(authService: AuthService, authRules: AuthRules) {
         this.authService = authService;

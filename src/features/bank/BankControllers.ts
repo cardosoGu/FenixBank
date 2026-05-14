@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { Request, Response } from "express";
 import { BankService } from "./BankServices.ts";
 import { BankRules } from "./BankRules.ts";
 import { ITransactionLog } from "../../models/TransactionLogs/ITransactionLog.ts";
@@ -13,7 +13,7 @@ export class BankController {
     private bankService: BankService
     private bankRules: BankRules
 
-    transfer: RequestHandler = async (req, res) => {
+    transfer = async (req: Request, res:Response) => {
         const { userId } = req.user!
         const { pixKey, amount } = req.body
 
@@ -28,7 +28,7 @@ export class BankController {
         }
     }
 
-    deposit: RequestHandler = async (req, res) => {
+    deposit = async (req: Request, res:Response) => {
         const { userId } = req.user!
         const data = req.body
 
@@ -44,7 +44,7 @@ export class BankController {
 
     }
 
-    withdraw: RequestHandler = async (req, res) => {
+    withdraw = async (req: Request, res:Response) => {
         const { userId } = req.user!
         const data = req.body
 
@@ -56,12 +56,11 @@ export class BankController {
             return res.send_ok("Withdraw successful!", { transactionLog: this.formatTransaction(withdraw.transactionLog!) })
 
         } catch (error: unknown) {
-            console.log(error)
-            res.send_internalServerError("An error occurred while processing the withdraw.", error)
+            return handleHttpError(res, error)
         }
     }
 
-    getTransactions: RequestHandler = async (req, res) => {
+     getTransactions = async (req: Request, res:Response) => {
         const { userId } = req.user!
         try {
             const transactions = await this.bankService.getTransactions(userId)
@@ -76,7 +75,7 @@ export class BankController {
     }
 
 
-    getTransactionById: RequestHandler = async (req, res) => {
+    getTransactionById = async (req: Request, res:Response) => {
         const { userId } = req.user!
         const { id } = req.params as { id: string }
 
@@ -90,7 +89,7 @@ export class BankController {
         }
     }
 
-    getAccountInfo: RequestHandler = async (req, res) => {
+    getAccountInfo = async (req: Request, res:Response) => {
         const { userId } = req.user!
 
         try {
@@ -103,7 +102,7 @@ export class BankController {
         }
     }
 
-    addPixKey: RequestHandler = async (req, res) => {
+    addPixKey = async (req: Request, res:Response) => {
         const { userId } = req.user!
         const data = req.body
         try {
@@ -117,7 +116,7 @@ export class BankController {
         }
     }
 
-    removePixKey: RequestHandler = async (req, res) => {
+    removePixKey = async (req: Request, res:Response) => {
         const { userId } = req.user!
         const { key } = req.params as { key: string }
 

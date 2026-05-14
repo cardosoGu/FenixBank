@@ -1,4 +1,4 @@
-import { RequestHandler } from 'express'
+import { Response, Request } from 'express'
 import { AuthService, IUserDTO } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
 import { handleHttpError } from "../../utils/HttpErrorHandle.ts";
@@ -10,7 +10,7 @@ export class AuthController {
     private authService: AuthService
     private authRules: AuthRules
 
-    login: RequestHandler = async (req, res) => {
+    login = async (req: Request, res: Response) => {
         const clientIp = req.ip ?? 'unknown';
         const userAgent = req.headers['user-agent'] ?? 'unknown';
         const data = req.body
@@ -36,7 +36,7 @@ export class AuthController {
         }
     }
 
-    register: RequestHandler = async (req, res) => {
+    register = async (req: Request, res: Response) => {
         try {
             const clientIp = req.ip ?? 'unknown';
             const userAgent = req.headers['user-agent'] ?? 'unknown';
@@ -58,7 +58,7 @@ export class AuthController {
         }
     }
 
-    logout: RequestHandler = async (req, res) => {
+    logout = async (req: Request, res: Response) => {
         try {
             const { userId } = req.user!
             const refreshToken = req.cookies['refreshToken']
@@ -72,10 +72,11 @@ export class AuthController {
         }
     }
 
-    logoutAll: RequestHandler = async (req, res) => {
+    logoutAll = async (req: Request, res: Response) => {
         try {
             const { userId } = req.user!
-            await this.authService.logoutAll(userId)
+            const { refreshToken } = req.cookies
+            await this.authService.logoutAll(userId, refreshToken)
 
             res.clearCookie('refreshToken');
             res.send_ok("Logout all sessions with success!")
@@ -84,7 +85,7 @@ export class AuthController {
         }
     }
 
-    refresh: RequestHandler = async (req, res) => {
+    refresh = async (req: Request, res: Response) => {
         const clientIp = req.ip ?? 'unknown';
         const userAgent = req.headers['user-agent'] ?? 'unknown';
         const refreshToken = req.cookies['refreshToken']
@@ -107,7 +108,7 @@ export class AuthController {
         }
     }
 
-    me: RequestHandler = async (req, res) => {
+    me = async (req: Request, res: Response) => {
         const { userId } = req.user!
 
         try {
@@ -127,7 +128,7 @@ export class AuthController {
         }
     }
 
-    sessions: RequestHandler = async (req, res) => {
+    sessions = async (req: Request, res: Response) => {
         const { userId } = req.user!
 
         try {

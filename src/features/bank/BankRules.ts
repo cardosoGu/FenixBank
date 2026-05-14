@@ -16,8 +16,8 @@ export class BankRules extends BaseRules {
 
     deposit(data: Record<string, unknown>) {
         this.addRule('amount', {
-            validator: (value: unknown) => is.number(value) && (value as number) > 0 && (value as number) <= 500,
-            message: 'Amount must be a positive number'
+            validator: (value: unknown) => is.number(value) && (value as number) > 0 && (value as number) <= 10000,
+            message: 'Amount must be a valid number'
         })
         return this.run(data)
     }

@@ -5,22 +5,13 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
-import swaggerJSDoc from 'swagger-jsdoc'
 import authRoutes from './src/features/auth/AuthRoute.ts'
 import bankRoutes from './src/features/bank/BankRoutes.ts'
 const app: Application = express()
 
-const swaggerSpec = swaggerJSDoc({
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'FenixBank API',
-            version: '1.0.0',
-            description: 'Documentacao da API do FenixBank'
-        }
-    },
-    apis: ['./app.ts']
-})
+const swaggerSpec = JSON.parse(
+    Deno.readTextFileSync(new URL('./docs/openapi.json', import.meta.url))
+)
 
 // Project Libs configs
 
@@ -36,8 +27,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Routes config
 
-app.use('/api/auth', authRoutes)
-app.use('/api/bank', bankRoutes)
+app.use('/', authRoutes)
+app.use('/', bankRoutes)
 
 // Middlewares Config
 

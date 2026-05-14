@@ -10,7 +10,7 @@ const sessionSchema = new Schema<ISession>({
 })
 
 const accountSchema = new Schema<IAccount>({
-    pixKeys: { type: [String], default: [] },
+    pixKeys: { type: [String], default: [], unique: true },
     balance: { type: Number, required: false, min: [0, 'Balance cannot be negative'], default: 0 },
 })
 
@@ -19,11 +19,11 @@ class UserSchemaClass extends BaseSchema {
     constructor() {
         super({
             name: { type: String, required: true, default: null },
-            email: { type: String, required: true, unique: true },
-            cpf: { type: String, required: true, unique: true },
+            email: { type: String, required: true, unique: true, default: null },
+            cpf: { type: String, required: true, unique: true, default: null, set: (cpf: string) => cpf.replace(/\D/g, '') },
             role: { type: String, enum: Object.values(UserRole), default: UserRole.Customer },
             password: { type: String, required: true, default: null },
-            account: { type: accountSchema, required: true },
+            account: { type: accountSchema, required: true, default: {} },
             sessions: { type: [sessionSchema], default: [] },
             transactionLogs: [{ type: Schema.Types.ObjectId, ref: 'TransactionLog', default: [] }],
         })

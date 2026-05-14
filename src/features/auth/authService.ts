@@ -4,7 +4,7 @@ import { jwtService } from "../../utils/Jwt.ts"
 import { ISession } from "../../models/User/IUser.ts";
 import { Types } from "mongoose";
 import { hashToken } from "../../utils/Crypto.ts";
-
+import throwlhos from "throwlhos";
 export interface IUserDTO {
     name: string;
     email: string;
@@ -29,21 +29,21 @@ export class AuthService {
     async register(data: IUserDTO, clientIp: string, userAgent: string) {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
-            return { success: false, message: "Email already in use!" };
+            throw throwlhos.default.err_badRequest("Email already in use!");
         }
 
         const user = await this.userRepository.create({
             name: data.name,
             email: data.email,
-            cpf: data.cpf.replace(/\D/g, ''),
+            cpf: data.cpf,
             password: data.password,
             account: {
-                pixKeys: data.pixKeys,
+                pixKeys: [...data.pixKeys, data.email, data.cpf],
                 balance: data.balance,
             },
         });
         if (!user) {
-            return { success: false, message: "Error creating user!" };
+            throw throwlhos.default.err_internalServerError("Error creating user!");
         }
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
@@ -57,12 +57,12 @@ export class AuthService {
     async login(data: IUserLoginDTO, clientIp: string, userAgent: string) {
         const user = await this.userRepository.findByEmail(data.email);
         if (!user) {
-            return { success: false, message: "Invalid email or password!" };
+            throw throwlhos.default.err_unauthorized("Invalid email or password!");
         }
 
         const isPasswordValid = await user.passwordMatches(data.password);
         if (!isPasswordValid) {
-            return { success: false, message: "Invalid email or password!" };
+            throw throwlhos.default.err_unauthorized("Invalid email or password!");
         }
 
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
@@ -77,11 +77,11 @@ export class AuthService {
     async logout(userId: string, refreshToken: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
-            return { success: false, message: "User not found!" };
+            throw throwlhos.default.err_notFound("User not found!");
         }
         const actualSession = user.sessions.some((session: ISession) => session.refreshToken === hashToken(refreshToken))
         if (!actualSession) {
-            return { success: false, message: "Session not found!" };
+            throw throwlhos.default.err_notFound("Session not found!");
         }
 
         await this.userRepository.deleteSessionByRefreshToken(userId, hashToken(refreshToken))
@@ -91,7 +91,7 @@ export class AuthService {
     async logoutAll(userId: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
-            return { success: false, message: "User not found!" };
+            throw throwlhos.default.err_notFound("User not found!");
         }
 
         await this.userRepository.deleteAllSessionsByUserId(userId)
@@ -103,16 +103,16 @@ export class AuthService {
         //validate refresh token
         const payload = await jwtService.verifyRefreshToken(refreshToken)
         if (!payload) {
-            return { success: false, message: "Invalid refresh token!" };
+            throw throwlhos.default.err_unauthorized("Invalid refresh token!");
         }
 
         // validate if user exists and if session exists
         const user = await this.userRepository.findById(new Types.ObjectId(payload.sub));
         if (!user) {
-            return { success: false, message: "User not found!" };
+            throw throwlhos.default.err_notFound("User not found!");
         }
         if (!user.sessions.some((session: ISession) => session.refreshToken === hashToken(refreshToken))) {
-            return { success: false, message: "Session not found!" };
+            throw throwlhos.default.err_notFound("Session not found!");
         }
 
         // delete old session
@@ -132,7 +132,7 @@ export class AuthService {
 
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
-            return { success: false, message: "User not found!" };
+            throw throwlhos.default.err_notFound("User not found!");
         }
         return { success: true, message: "User info fetched successfully!", user };
     }
@@ -140,7 +140,7 @@ export class AuthService {
     async sessions(userId: string) {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
-            return { success: false, message: "User not found!" };
+            throw throwlhos.default.err_notFound("User not found!");
         }
 
         return { success: true, message: "User sessions fetched successfully!", sessions: user.sessions };

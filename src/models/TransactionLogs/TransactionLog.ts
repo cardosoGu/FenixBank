@@ -36,24 +36,6 @@ class TransactionLogClass implements ITransactionLog {
     get hasFailed(): boolean {
         return this.status === TransactionStatus.Failed
     }
-
-    formatTransaction(transaction: ITransactionLog) {
-        return  {
-                transactionId: transaction._id,
-                user: {
-                    userId: transaction.user.userId,
-                    userBalanceAfterTransaction: transaction.user.userBalanceAfterTransaction
-                },
-                receiver: transaction.receiver ? {
-                    userId: transaction.receiver.receiverId,
-                    userBalanceAfterTransaction: transaction.receiver.receiverBalanceAfterTransaction
-                } : null,
-                type: transaction.type,
-                value: transaction.value,
-                status: transaction.status,
-                userBalanceAfterTransaction: transaction.user.userBalanceAfterTransaction
-            }
-    }
 }
 
 // Schema Class

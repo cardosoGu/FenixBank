@@ -33,5 +33,11 @@ export class UserRepository extends BaseRepository<IUser, IUserMethods> {
             }
         );
     }
+    pixKeyExists(pixKey: string) {
+        return this.model.findOne({ 'account.pixKeys': pixKey });
+    }
+    findByPixKey(pixKey: string) {
+        return this.model.findOne({ 'account.pixKeys': pixKey });
+    }
 
 }

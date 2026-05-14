@@ -1,4 +1,5 @@
 import rc from 'request-check';
+import throwlhos from "throwlhos";
 
 type Rule = {
     validator: (value: unknown) => boolean,
@@ -32,7 +33,9 @@ export class BaseRules {
 
         this.rules = {}
 
-        if (errors.length > 0) return { success: false, errors }
+        if (errors.length > 0) {
+            throw throwlhos.default.err_badRequest("Validation failed!", errors)
+        }
         return { success: true }
     }
 }

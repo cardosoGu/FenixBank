@@ -1,5 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import { env } from '../../config/Env.ts';
+import { env } from '../config/Env.ts';
 
 export const swaggerSpec = swaggerJSDoc({
     definition: {

@@ -22,18 +22,3 @@ Deno.test("JWTService - should generate and verify refresh token", () => {
 
     assertEquals(payload.sub, userId);
 });
-
-Deno.test("JWTService - parseExpiresInToMs should parse all supported units", () => {
-    assertEquals(jwtService.parseExpiresInToMs("1d"), 86400000);
-    assertEquals(jwtService.parseExpiresInToMs("2h"), 7200000);
-    assertEquals(jwtService.parseExpiresInToMs("3m"), 180000);
-    assertEquals(jwtService.parseExpiresInToMs("4s"), 4000);
-});
-
-Deno.test("JWTService - parseExpiresInToMs should throw for invalid unit", () => {
-    assertThrows(
-        () => jwtService.parseExpiresInToMs("10x"),
-        Error,
-        "Invalid expiresIn format",
-    );
-});

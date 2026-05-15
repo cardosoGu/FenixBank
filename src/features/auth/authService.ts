@@ -7,6 +7,7 @@ import { hashToken } from "../../utils/Crypto.ts";
 import throwlhos from "throwlhos";
 import { UserDTO, LoginInputDTO, AuthResponseDTO, RefreshResponseDTO, MeResponseDTO, SessionsResponseDTO } from "./AuthDTOs.ts";
 import { IBaseResponseDTO } from "../../base/IBaseInterface.ts";
+import { userFormat } from "../../utils/formatters.ts";
 
 
 export class AuthService {
@@ -40,7 +41,7 @@ export class AuthService {
         user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp, userAgent });
         await user.save()
 
-        const userInfo = this.userFormat(user)
+        const userInfo = userFormat(user)
         return {
             success: true, message: "User created successfully!", accessToken, refreshToken,
             user: userInfo
@@ -63,7 +64,7 @@ export class AuthService {
 
         user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp: data.clientIp, userAgent: data.userAgent });
         await user.save()
-        const userInfo = this.userFormat(user)
+        const userInfo = userFormat(user)
 
         return {
             success: true, message: "User logged in successfully!", accessToken, refreshToken,
@@ -136,7 +137,7 @@ export class AuthService {
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!");
         }
-        const userInfo = this.userFormat(user)
+        const userInfo = userFormat(user)
 
         return { success: true, message: "User info fetched successfully!", user: userInfo };
     }
@@ -151,15 +152,8 @@ export class AuthService {
 
     }
 
-    private userFormat(user: IUser): Omit<UserDTO, 'password'> {
-        return {
-            name: user.name,
-            email: user.email,
-            cpf: user.cpf,
-            pixKeys: user.account.pixKeys,
-            balance: user.account.balance,
-        }
-    }
+
 }
+
 
 

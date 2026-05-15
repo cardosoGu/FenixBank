@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { jwtService } from "../utils/Jwt.ts";
+import { jwtService } from "../utils/jwt.ts";
 import { Types } from "mongoose";
 import { UserRepository } from "../models/User/UserRepository.ts";
 import { ISession } from "../models/User/IUser.ts";

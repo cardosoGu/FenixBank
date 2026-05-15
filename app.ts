@@ -5,13 +5,11 @@ import helmet from 'helmet'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from './src/docs/swagger.ts'
 import authRoutes from './src/features/auth/AuthRoute.ts'
 import bankRoutes from './src/features/bank/BankRoutes.ts'
 const app: Application = express()
 
-const swaggerSpec = JSON.parse(
-    Deno.readTextFileSync(new URL('./docs/openapi.json', import.meta.url))
-)
 
 // Project Libs configs
 

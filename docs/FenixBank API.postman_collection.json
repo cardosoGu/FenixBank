@@ -1508,36 +1508,6 @@
                   "body": ""
                 },
                 {
-                  "name": "Failed to retrieve account information",
-                  "originalRequest": {
-                    "method": "GET",
-                    "header": [
-                      {
-                        "description": "Added as a part of security scheme: bearer",
-                        "key": "Authorization",
-                        "value": "Bearer <token>"
-                      }
-                    ],
-                    "url": {
-                      "raw": "{{baseUrl}}/api/bank/account",
-                      "host": [
-                        "{{baseUrl}}"
-                      ],
-                      "path": [
-                        "api",
-                        "bank",
-                        "account"
-                      ]
-                    }
-                  },
-                  "status": "Bad Request",
-                  "code": 400,
-                  "_postman_previewlanguage": "text",
-                  "header": [],
-                  "cookie": [],
-                  "body": ""
-                },
-                {
                   "name": "Login Required",
                   "originalRequest": {
                     "method": "GET",
@@ -1834,7 +1804,7 @@
                   "body": ""
                 },
                 {
-                  "name": "Invalid payload or value gt 500",
+                  "name": "Invalid payload or value gt 10000",
                   "originalRequest": {
                     "method": "POST",
                     "header": [
@@ -1843,14 +1813,14 @@
                         "value": "application/json"
                       },
                       {
-                        "description": "Added as a part of security scheme: bearer",
                         "key": "Authorization",
-                        "value": "Bearer <token>"
+                        "value": "Bearer <token>",
+                        "description": "Added as a part of security scheme: bearer"
                       }
                     ],
                     "body": {
                       "mode": "raw",
-                      "raw": "{\n  \"amount\": 100\n}",
+                      "raw": "{\n  \"amount\": 100000\n}",
                       "options": {
                         "raw": {
                           "headerFamily": "json",
@@ -1976,14 +1946,14 @@
                         "value": "application/json"
                       },
                       {
-                        "description": "Added as a part of security scheme: bearer",
                         "key": "Authorization",
-                        "value": "Bearer <token>"
+                        "value": "Bearer <token>",
+                        "description": "Added as a part of security scheme: bearer"
                       }
                     ],
                     "body": {
                       "mode": "raw",
-                      "raw": "{\n  \"pixKey\": \"maria@fenixbank.com\",\n  \"amount\": 50\n}",
+                      "raw": "{\n  \"pixKey\": \"11999999999\",\n  \"amount\": 50\n}",
                       "options": {
                         "raw": {
                           "headerFamily": "json",
@@ -2020,14 +1990,14 @@
                         "value": "application/json"
                       },
                       {
-                        "description": "Added as a part of security scheme: bearer",
                         "key": "Authorization",
-                        "value": "Bearer <token>"
+                        "value": "Bearer <token>",
+                        "description": "Added as a part of security scheme: bearer"
                       }
                     ],
                     "body": {
                       "mode": "raw",
-                      "raw": "{\n  \"pixKey\": \"maria@fenixbank.com\",\n  \"amount\": 50\n}",
+                      "raw": "{\n  \"pixKey\": \"InvalidPixKey\",\n  \"amount\": 50\n}",
                       "options": {
                         "raw": {
                           "headerFamily": "json",

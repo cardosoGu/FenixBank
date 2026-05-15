@@ -1,23 +1,12 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
 
-import { jwtService } from "../../utils/Jwt.ts"
-import { ISession } from "../../models/User/IUser.ts";
+import { jwtService } from "../../utils/jwt.ts"
+import { ISession, IUser } from "../../models/User/IUser.ts";
 import { Types } from "mongoose";
 import { hashToken } from "../../utils/Crypto.ts";
 import throwlhos from "throwlhos";
-export interface IUserDTO {
-    name: string;
-    email: string;
-    cpf: string;
-    password: string;
-    pixKeys: string[];
-    balance: number;
-}
-
-export interface IUserLoginDTO {
-    email: string;
-    password: string;
-}
+import { UserDTO, LoginInputDTO, AuthResponseDTO, RefreshResponseDTO, MeResponseDTO, SessionsResponseDTO } from "./AuthDTOs.ts";
+import { IBaseResponseDTO } from "../../base/IBaseInterface.ts";
 
 
 export class AuthService {
@@ -26,7 +15,7 @@ export class AuthService {
     }
     private userRepository: UserRepository
 
-    async register(data: IUserDTO, clientIp: string, userAgent: string) {
+    async register(data: UserDTO, clientIp: string, userAgent: string): Promise<AuthResponseDTO> {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
             throw throwlhos.default.err_badRequest("Email already in use!");
@@ -51,10 +40,14 @@ export class AuthService {
         user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp, userAgent });
         await user.save()
 
-        return { success: true, message: "User created successfully!", accessToken, refreshToken, user };
+        const userInfo = this.userFormat(user)
+        return {
+            success: true, message: "User created successfully!", accessToken, refreshToken,
+            user: userInfo
+        };
     }
 
-    async login(data: IUserLoginDTO, clientIp: string, userAgent: string) {
+    async login(data: LoginInputDTO): Promise<AuthResponseDTO> {
         const user = await this.userRepository.findByEmail(data.email);
         if (!user) {
             throw throwlhos.default.err_unauthorized("Invalid credentials!");
@@ -68,13 +61,17 @@ export class AuthService {
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
 
-        user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp, userAgent });
+        user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp: data.clientIp, userAgent: data.userAgent });
         await user.save()
+        const userInfo = this.userFormat(user)
 
-        return { success: true, message: "User logged in successfully!", user, accessToken, refreshToken };
+        return {
+            success: true, message: "User logged in successfully!", accessToken, refreshToken,
+            user: userInfo
+        };
     }
 
-    async logout(userId: string, refreshToken: string) {
+    async logout(userId: string, refreshToken: string): Promise<IBaseResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!");
@@ -88,7 +85,7 @@ export class AuthService {
 
         return { success: true, message: "User logged out successfully!" };
     }
-    async logoutAll(userId: string, refreshToken: string) {
+    async logoutAll(userId: string, refreshToken: string): Promise<IBaseResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!");
@@ -103,7 +100,7 @@ export class AuthService {
 
         return { success: true, message: "User logged out successfully!" };
     }
-    async refresh(refreshToken: string, clientIp: string, userAgent: string) {
+    async refresh(refreshToken: string, clientIp: string, userAgent: string): Promise<RefreshResponseDTO> {
 
         //validate refresh token
         const payload = await jwtService.verifyRefreshToken(refreshToken)
@@ -131,18 +128,20 @@ export class AuthService {
         user.sessions.push({ refreshToken: hashToken(newRefreshToken), clientIp, userAgent });
         await user.save()
 
-        return { success: true, message: "User logged in successfully!", user, accessToken, refreshToken: newRefreshToken };
+        return { success: true, message: "User logged in successfully!", accessToken, refreshToken: newRefreshToken };
     }
-    async me(userId: string) {
+    async me(userId: string): Promise<MeResponseDTO> {
 
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!");
         }
-        return { success: true, message: "User info fetched successfully!", user };
+        const userInfo = this.userFormat(user)
+
+        return { success: true, message: "User info fetched successfully!", user: userInfo };
     }
 
-    async sessions(userId: string) {
+    async sessions(userId: string): Promise<SessionsResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId));
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!");
@@ -151,4 +150,16 @@ export class AuthService {
         return { success: true, message: "User sessions fetched successfully!", sessions: user.sessions };
 
     }
+
+    private userFormat(user: IUser): Omit<UserDTO, 'password'> {
+        return {
+            name: user.name,
+            email: user.email,
+            cpf: user.cpf,
+            pixKeys: user.account.pixKeys,
+            balance: user.account.balance,
+        }
+    }
 }
+
+

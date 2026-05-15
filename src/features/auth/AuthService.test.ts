@@ -70,9 +70,9 @@ Deno.test("AuthService.register - should append email and cpf to pix keys", asyn
     );
 
     assert(result.success);
-    assert(result.user.account.pixKeys.includes("custom-key"));
-    assert(result.user.account.pixKeys.includes("new.user@example.com"));
-    assert(result.user.account.pixKeys.includes("12345678900"));
+    assert(result.user.pixKeys.includes("custom-key"));
+    assert(result.user.pixKeys.includes("new.user@example.com"));
+    assert(result.user.pixKeys.includes("12345678900"));
 });
 
 Deno.test("AuthService.refresh - should reject invalid refresh token", async () => {
@@ -111,9 +111,10 @@ Deno.test("AuthService.login - should reject invalid password", async () => {
                 {
                     email: "pedro.oliveira@example.com",
                     password: "wrong-password",
-                },
-                "127.0.0.1",
-                "Deno",
+
+                    clientIp: "127.0.0.1",
+                    userAgent: "Deno"
+                }
             ),
         "Invalid credentials",
     );

@@ -3,13 +3,16 @@ import { TransactionLogRepository } from "../../models/TransactionLogs/Transacti
 import mongoose, { Types } from "mongoose";
 import { TransactionStatus, TransactionType } from "../../models/TransactionLogs/ITransactionLog.ts";
 import throwlhos from "throwlhos";
+import { BankResponseDTO, GetTransactionsResponseDTO } from "./BankDTOs.ts";
+import { formatTransaction } from "../../utils/formatters.ts";
+import { IBaseResponseDTO } from "../../base/IBaseInterface.ts";
 
 
 export class BankService {
     constructor(private userRepository: UserRepository, private transactionLogRepository: TransactionLogRepository) {
 
     }
-    async transfer(userId: string, pixKey: string, amount: number) {
+    async transfer(userId: string, pixKey: string, amount: number): Promise<BankResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!")
@@ -67,8 +70,8 @@ export class BankService {
             await receiver.save({ session })
 
             await session.commitTransaction()
-            return { success: true, transactionLog }
-            
+            return { success: true, message: "Transfer successful!", transactionLog: formatTransaction(transactionLog) }
+
         } catch {
 
             await session.abortTransaction()
@@ -78,7 +81,7 @@ export class BankService {
         }
     }
 
-    async deposit(amount: number, userId: string) {
+    async deposit(amount: number, userId: string): Promise<BankResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!")
@@ -102,14 +105,14 @@ export class BankService {
         })
         user.transactionLogs.push(transactionLog._id!)
         await user.save()
-        return { success: true, transactionLog }
+        return { success: true, message: "Deposit successful!", transactionLog: formatTransaction(transactionLog) }
 
     }
 
 
 
 
-    async withdraw(amount: number, userId: string) {
+    async withdraw(amount: number, userId: string): Promise<BankResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!")
@@ -126,7 +129,7 @@ export class BankService {
                 value: amount
             })
 
-            throw throwlhos.default.err_badRequest("Insufficient account balance!", transactionLog)
+            throw throwlhos.default.err_badRequest("Insufficient account balance!", formatTransaction(transactionLog))
         }
 
         //create a transaction log with status pending
@@ -146,10 +149,10 @@ export class BankService {
         user.transactionLogs.push(transactionLog._id!)
         await user.save()
 
-        return { success: true, transactionLog }
+        return { success: true, message: "Withdrawal successful!", transactionLog: formatTransaction(transactionLog) }
     }
 
-    async getTransactions(userId: string) {
+    async getTransactions(userId: string): Promise<GetTransactionsResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!")
@@ -159,10 +162,10 @@ export class BankService {
             throw throwlhos.default.err_notFound("No transactions found for this user!")
         }
 
-        return { success: true, transactions }
+        return { success: true, message: "Transactions found!", transactions: transactions.map(formatTransaction) }
     }
 
-    async getTransactionById(transactionId: string, userId: string) {
+    async getTransactionById(transactionId: string, userId: string): Promise<BankResponseDTO> {
         const transaction = await this.transactionLogRepository.findById(new Types.ObjectId(transactionId))
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!transaction) {
@@ -176,7 +179,7 @@ export class BankService {
         }
 
 
-        return { success: true, transaction }
+        return { success: true, message: "Transaction found!", transactionLog: formatTransaction(transaction) }
     }
 
     async getAccountInfo(userId: string) {
@@ -184,11 +187,11 @@ export class BankService {
         if (!user) {
             throw throwlhos.default.err_notFound("User not found")
         }
-        return { success: true, account: user.account }
+        return { success: true, message: "Account info found!", account: user.account }
 
     }
 
-    async addPixKey(userId: string, newPixKey: string) {
+    async addPixKey(userId: string, newPixKey: string): Promise<IBaseResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found")
@@ -205,7 +208,7 @@ export class BankService {
         return { success: true, message: 'PIX key added successfully' }
     }
 
-    async removePixKey(userId: string, pixKey: string) {
+    async removePixKey(userId: string, pixKey: string): Promise<IBaseResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found")

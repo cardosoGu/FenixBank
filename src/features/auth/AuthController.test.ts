@@ -261,7 +261,7 @@ Deno.test({
         assert(res.called.send_ok, "should called send_ok");
         assert(res.called.clearCookie, "should have cleared the cookie");
         assertEquals(res.payload.code, 200);
-        assertEquals(res.payload.message, "Logout with success!");
+        assertEquals(res.payload.message, "User logged out successfully!");
     }
 })
 Deno.test({
@@ -313,7 +313,7 @@ Deno.test({
         assert(res.called.send_ok, "should called send_ok");
         assert(res.called.clearCookie, "should have cleared the cookie");
         assertEquals(res.payload.code, 200);
-        assertEquals(res.payload.message, "Logout all sessions with success!");
+        assertEquals(res.payload.message, "User logged out successfully!");
     }
 })
 Deno.test({

@@ -3,7 +3,7 @@ import {
     assertEquals,
     assertThrows,
 } from "https://deno.land/std@0.220.0/assert/mod.ts";
-import { jwtService } from "./Jwt.ts";
+import { jwtService } from "./jwt.ts";
 
 Deno.test("JWTService - should generate and verify access token", () => {
     const userId = "507f1f77bcf86cd799439011";

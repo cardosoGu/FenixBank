@@ -233,7 +233,7 @@ Deno.test({
 
         await bankController.getTransactionById(request, res)
         assert(res.called.send_ok, "Transaction data returned successfully!");
-        assertExists(res.payload.data.transaction, "should have returned transaction data");
+        assertExists(res.payload.data.transactionLog, "should have returned transaction data");
     }
 })
 Deno.test({

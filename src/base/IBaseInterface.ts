@@ -5,3 +5,7 @@ export interface IBaseInterface {
     createdAt?: Date
     updatedAt?: Date
 }
+export interface IBaseResponseDTO {
+    success: boolean;
+    message: string;
+}

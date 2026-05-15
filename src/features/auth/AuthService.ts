@@ -21,14 +21,13 @@ export class AuthService {
         if (existingUser) {
             throw throwlhos.default.err_badRequest("Email already in use!");
         }
-
         const user = await this.userRepository.create({
             name: data.name,
             email: data.email,
             cpf: data.cpf,
             password: data.password,
             account: {
-                pixKeys: [...data.pixKeys, data.email, data.cpf],
+                pixKeys: [...new Set([...data.pixKeys, data.email, data.cpf])],
                 balance: data.balance ?? 0,
             },
         });

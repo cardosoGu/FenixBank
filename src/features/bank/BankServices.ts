@@ -140,7 +140,7 @@ export class BankService {
                 userBalanceAfterTransaction: newBalance
             },
             type: TransactionType.WITHDRAW,
-            status: TransactionStatus.PENDING,
+            status: TransactionStatus.COMPLETED,
             value: amount
         })
 

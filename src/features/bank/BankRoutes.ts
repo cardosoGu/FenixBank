@@ -42,25 +42,37 @@ const bankController = new BankController(bankService, bankRules)
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Transfer successful!
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Transfer successful.
+ *               data: null
  *       400:
  *         description: Invalid payload, receiver not found, or insufficient balance
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: Insufficient balance to complete this transfer.
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.post('/api/bank/transfer', authMiddleware.isLogged, bankController.transfer)
+router.post('/transfer', authMiddleware.isLogged, bankController.transfer)
 
 /**
  * @openapi
@@ -87,25 +99,37 @@ router.post('/api/bank/transfer', authMiddleware.isLogged, bankController.transf
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Deposit successful!
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Deposit successful.
+ *               data: null
  *       400:
  *         description: Invalid payload or amount outside the allowed limit
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: Deposit amount exceeds the maximum limit of 10,000.00.
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.post('/api/bank/deposit', authMiddleware.isLogged, bankController.deposit)
+router.post('/deposit', authMiddleware.isLogged, bankController.deposit)
 
 /**
  * @openapi
@@ -130,25 +154,37 @@ router.post('/api/bank/deposit', authMiddleware.isLogged, bankController.deposit
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Withdraw successful!
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Withdrawal successful.
+ *               data: null
  *       400:
  *         description: Invalid payload or insufficient balance
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: Insufficient balance to complete this withdrawal.
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.post('/api/bank/withdraw', authMiddleware.isLogged, bankController.withdraw)
+router.post('/withdraw', authMiddleware.isLogged, bankController.withdraw)
 
 /**
  * @openapi
@@ -165,31 +201,35 @@ router.post('/api/bank/withdraw', authMiddleware.isLogged, bankController.withdr
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Transactions retrieved successfully.
+ *               data:
  *                 transactions:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       transactionId:
- *                         type: string
- *                       type:
- *                         type: string
- *                         enum: [DEPOSIT, WITHDRAW, TRANSFER]
- *                       value:
- *                         type: number
- *                       status:
- *                         type: string
- *                         enum: [COMPLETED, FAILED, PENDING]
+ *                   - transactionId: txn_abc123
+ *                     type: DEPOSIT
+ *                     value: 500.00
+ *                     status: COMPLETED
+ *                   - transactionId: txn_def456
+ *                     type: TRANSFER
+ *                     value: 50.00
+ *                     status: COMPLETED
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.get('/api/bank/transactions', authMiddleware.isLogged, bankController.getTransactions)
+router.get('/transactions', authMiddleware.isLogged, bankController.getTransactions)
 
 /**
  * @openapi
@@ -213,38 +253,52 @@ router.get('/api/bank/transactions', authMiddleware.isLogged, bankController.get
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 transactionId:
- *                   type: string
- *                 type:
- *                   type: string
- *                   enum: [DEPOSIT, WITHDRAW, TRANSFER]
- *                 value:
- *                   type: number
- *                 status:
- *                   type: string
- *                   enum: [COMPLETED, FAILED, PENDING]
- *       403:
- *         description: No permission to access this transaction
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         description: Transaction not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Transaction retrieved successfully.
+ *               data:
+ *                 transactionId: txn_abc123
+ *                 type: TRANSFER
+ *                 value: 50.00
+ *                 status: COMPLETED
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
+ *       403:
+ *         description: No permission to access this transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error403'
+ *             example:
+ *               status: FORBIDDEN
+ *               code: 403
+ *               success: false
+ *               message: You do not have permission to access this transaction.
+ *       404:
+ *         description: Transaction not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error404'
+ *             example:
+ *               status: NOT_FOUND
+ *               code: 404
+ *               success: false
+ *               message: Transaction not found.
  */
-router.get('/api/bank/transactions/:id', authMiddleware.isLogged, bankController.getTransactionById)
+router.get('/transactions/:id', authMiddleware.isLogged, bankController.getTransactionById)
 
 /**
  * @openapi
@@ -261,30 +315,40 @@ router.get('/api/bank/transactions/:id', authMiddleware.isLogged, bankController
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 balance:
- *                   type: number
- *                   example: 250.00
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Account information retrieved successfully.
+ *               data:
+ *                 balance: 250.00
  *                 pixKeys:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example: [maria@fenixbank.com]
+ *                   - maria@fenixbank.com
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  *       404:
  *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error404'
+ *             example:
+ *               status: NOT_FOUND
+ *               code: 404
+ *               success: false
+ *               message: User not found.
  */
-router.get('/api/bank/account', authMiddleware.isLogged, bankController.getAccountInfo)
+router.get('/account', authMiddleware.isLogged, bankController.getAccountInfo)
 
 /**
  * @openapi
@@ -307,25 +371,37 @@ router.get('/api/bank/account', authMiddleware.isLogged, bankController.getAccou
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: PIX key added successfully
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Pix key added successfully.
+ *               data: null
  *       400:
  *         description: Pix key already exists or invalid payload
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: This Pix key is already registered.
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.post('/api/bank/pixKey', authMiddleware.isLogged, bankController.addPixKey)
+router.post('/pixKey', authMiddleware.isLogged, bankController.addPixKey)
 
 /**
  * @openapi
@@ -350,24 +426,36 @@ router.post('/api/bank/pixKey', authMiddleware.isLogged, bankController.addPixKe
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: PIX key removed successfully
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Pix key removed successfully.
+ *               data: null
  *       400:
  *         description: Pix key not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: Pix key not found on this account.
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.delete('/api/bank/pixKey/:key', authMiddleware.isLogged, bankController.removePixKey)
+router.delete('/pixKey/:key', authMiddleware.isLogged, bankController.removePixKey)
 
 export default router

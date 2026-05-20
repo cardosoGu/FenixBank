@@ -37,25 +37,37 @@ const router: Router = Router()
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: User created successfully
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: CREATED
+ *               code: 201
+ *               success: true
+ *               message: User created successfully.
+ *               data: null
  *       400:
  *         description: Invalid payload or email already in use
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: Email is already in use.
  *       401:
  *         description: User is already logged in
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: You are already logged in.
  */
-router.post('/api/auth/register', authMiddleware.notLogged, authController.register)
+router.post('/register', authMiddleware.notLogged, authController.register)
 
 /**
  * @openapi
@@ -77,26 +89,38 @@ router.post('/api/auth/register', authMiddleware.notLogged, authController.regis
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *                   description: JWT access token
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: User logged in successfully.
+ *               data:
+ *                 accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
  *         description: Invalid credentials or invalid payload
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error400'
+ *             example:
+ *               status: BAD_REQUEST
+ *               code: 400
+ *               success: false
+ *               message: Invalid email or password.
  *       401:
  *         description: User is already logged in
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: You are already logged in.
  */
-router.post('/api/auth/login', authMiddleware.notLogged, authController.login)
+router.post('/login', authMiddleware.notLogged, authController.login)
 
 /**
  * @openapi
@@ -113,25 +137,31 @@ router.post('/api/auth/login', authMiddleware.notLogged, authController.login)
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Sessions retrieved successfully.
+ *               data:
  *                 sessions:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       clientIp:
- *                         type: string
- *                       userAgent:
- *                         type: string
+ *                   - clientIp: 192.168.0.1
+ *                     userAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+ *                   - clientIp: 10.0.0.5
+ *                     userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)
  *       401:
  *         description: Missing or invalid token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.get('/api/auth/sessions', authMiddleware.isLogged, authController.sessions)
+router.get('/sessions', authMiddleware.isLogged, authController.sessions)
 
 /**
  * @openapi
@@ -148,19 +178,26 @@ router.get('/api/auth/sessions', authMiddleware.isLogged, authController.session
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: User logged out successfully!
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: User logged out successfully.
+ *               data: null
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.post('/api/auth/logout', authMiddleware.isLogged, authController.logout)
+router.post('/logout', authMiddleware.isLogged, authController.logout)
 
 /**
  * @openapi
@@ -177,19 +214,26 @@ router.post('/api/auth/logout', authMiddleware.isLogged, authController.logout)
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: User logged out successfully!
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: All sessions logged out successfully.
+ *               data: null
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  */
-router.post('/api/auth/logoutAll', authMiddleware.isLogged, authController.logoutAll)
+router.post('/logoutAll', authMiddleware.isLogged, authController.logoutAll)
 
 /**
  * @openapi
@@ -206,19 +250,27 @@ router.post('/api/auth/logoutAll', authMiddleware.isLogged, authController.logou
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Token refreshed successfully.
+ *               data:
+ *                 accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       401:
  *         description: Missing or invalid refresh token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Invalid or expired token.
  */
-router.put('/api/auth/refresh', authController.refresh)
+router.put('/refresh', authController.refresh)
 
 /**
  * @openapi
@@ -235,37 +287,42 @@ router.put('/api/auth/refresh', authController.refresh)
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 name:
- *                   type: string
- *                   example: Maria Silva
- *                 email:
- *                   type: string
- *                   example: maria@fenixbank.com
- *                 cpf:
- *                   type: string
- *                   example: 181.990.300-11
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *             example:
+ *               status: OK
+ *               code: 200
+ *               success: true
+ *               message: Profile retrieved successfully.
+ *               data:
+ *                 name: Maria Silva
+ *                 email: maria@fenixbank.com
+ *                 cpf: 181.990.300-11
  *                 pixKeys:
- *                   type: array
- *                   items:
- *                     type: string
- *                 balance:
- *                   type: number
- *                   example: 250.00
+ *                   - maria@fenixbank.com
+ *                 balance: 250.00
  *       401:
  *         description: Authentication required
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error401'
+ *             example:
+ *               status: UNAUTHORIZED
+ *               code: 401
+ *               success: false
+ *               message: Authentication required.
  *       404:
  *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               $ref: '#/components/schemas/Error404'
+ *             example:
+ *               status: NOT_FOUND
+ *               code: 404
+ *               success: false
+ *               message: User not found.
  */
-router.get('/api/auth/me', authMiddleware.isLogged, authController.me)
+router.get('/me', authMiddleware.isLogged, authController.me)
 
 export default router

@@ -25,8 +25,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Routes config
 
-app.use('/', authRoutes)
-app.use('/', bankRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/bank', bankRoutes)
 
 // Middlewares Config
 

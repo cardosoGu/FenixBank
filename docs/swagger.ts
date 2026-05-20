@@ -1,5 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import { env } from '../config/Env.ts';
+import { env } from '../config/env.ts';
 
 export const swaggerSpec = swaggerJSDoc({
     definition: {
@@ -24,18 +24,92 @@ export const swaggerSpec = swaggerJSDoc({
                 },
             },
             schemas: {
+                // ─── Base response shapes ───────────────────────────────────────
                 ErrorResponse: {
                     type: 'object',
                     properties: {
+                        status: {
+                            type: 'string',
+                            example: 'BAD_REQUEST',
+                        },
+                        code: {
+                            type: 'integer',
+                            example: 400,
+                        },
+                        success: {
+                            type: 'boolean',
+                            example: false,
+                        },
                         message: {
                             type: 'string',
-                            example: 'Invalid credentials',
+                            example: 'An error occurred.',
+                        },
+                    },
+                },
+                SuccessResponse: {
+                    type: 'object',
+                    properties: {
+                        status: {
+                            type: 'string',
+                            example: 'OK',
+                        },
+                        code: {
+                            type: 'integer',
+                            example: 200,
+                        },
+                        success: {
+                            type: 'boolean',
+                            example: true,
+                        },
+                        message: {
+                            type: 'string',
+                            example: 'Operation completed successfully.',
                         },
                         data: {
                             nullable: true,
                         },
                     },
                 },
+
+                // ─── Predefined error responses ────────────────────────────────
+                Error400: {
+                    allOf: [{ $ref: '#/components/schemas/ErrorResponse' }],
+                    example: {
+                        status: 'BAD_REQUEST',
+                        code: 400,
+                        success: false,
+                        message: 'Invalid request payload.',
+                    },
+                },
+                Error401: {
+                    allOf: [{ $ref: '#/components/schemas/ErrorResponse' }],
+                    example: {
+                        status: 'UNAUTHORIZED',
+                        code: 401,
+                        success: false,
+                        message: 'Authentication required.',
+                    },
+                },
+                Error403: {
+                    allOf: [{ $ref: '#/components/schemas/ErrorResponse' }],
+                    example: {
+                        status: 'FORBIDDEN',
+                        code: 403,
+                        success: false,
+                        message: 'You do not have permission to access this resource.',
+                    },
+                },
+                Error404: {
+                    allOf: [{ $ref: '#/components/schemas/ErrorResponse' }],
+                    example: {
+                        status: 'NOT_FOUND',
+                        code: 404,
+                        success: false,
+                        message: 'Resource not found.',
+                    },
+                },
+
+                // ─── Request bodies ────────────────────────────────────────────
                 RegisterRequest: {
                     type: 'object',
                     required: ['name', 'email', 'cpf', 'password', 'pixKeys'],

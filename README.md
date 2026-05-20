@@ -55,7 +55,12 @@ deno run coverage
 deno run dev
 ```
 
-# 🔐 Authentication
+# 🔐 Authentication/Security
+
+## RateLimiting
+
+- 429 Too Many Requests response when limit exceeded
+- login and register endpoints protected against brute-force attacks
 
 ### Protected routes require:
 

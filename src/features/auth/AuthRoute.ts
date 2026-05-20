@@ -4,7 +4,7 @@ import { UserRepository } from "../../models/User/UserRepository.ts";
 import { AuthService } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
 import { AuthMiddleware } from "../../middleware/AuthMiddleware.ts";
-
+import { authRateLimiting } from "../../middleware/Rate-Limiting.ts";
 /**
  * Prefix: api/auth/
  */
@@ -67,7 +67,7 @@ const router: Router = Router()
  *               success: false
  *               message: You are already logged in.
  */
-router.post('/register', authMiddleware.notLogged, authController.register)
+router.post('/register', authRateLimiting, authMiddleware.notLogged, authController.register)
 
 /**
  * @openapi
@@ -120,7 +120,7 @@ router.post('/register', authMiddleware.notLogged, authController.register)
  *               success: false
  *               message: You are already logged in.
  */
-router.post('/login', authMiddleware.notLogged, authController.login)
+router.post('/login', authRateLimiting, authMiddleware.notLogged, authController.login)
 
 /**
  * @openapi
@@ -270,7 +270,7 @@ router.post('/logoutAll', authMiddleware.isLogged, authController.logoutAll)
  *               success: false
  *               message: Invalid or expired token.
  */
-router.put('/refresh', authController.refresh)
+router.put('/refresh', authRateLimiting, authController.refresh)
 
 /**
  * @openapi

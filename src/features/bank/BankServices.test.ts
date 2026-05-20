@@ -10,7 +10,6 @@ import { MockAuthRepository } from "../auth/mocks/MockAuthRepository.ts";
 import { MockTransactionLogRepository } from "./mocks/MockBankRepository.ts";
 
 type SessionLike = {
-    withTransaction: <T>(fn: (session: unknown) => Promise<T>) => Promise<T>;
     startTransaction: () => void;
     commitTransaction: () => Promise<void>;
     abortTransaction: () => Promise<void>;
@@ -50,9 +49,6 @@ async function expectRejectMessage(
 async function withMockedSession<T>(fn: () => Promise<T>) {
     const originalStartSession = mongoose.startSession;
     const fakeSession: SessionLike = {
-        withTransaction: async <R>(callback: (session: unknown) => Promise<R>) => {
-            return await callback({});
-        },
         startTransaction: () => { },
         commitTransaction: async () => { },
         abortTransaction: async () => { },
@@ -135,7 +131,7 @@ Deno.test("BankService.getTransactions - should reject when user does not exist"
     const { service } = createService();
 
     await expectRejectMessage(
-        () => service.getTransactions("000000000000000000000000"),
+        () => service.getTransactions("000000000000000000000000", 1, 10),
         "User not found",
     );
 });

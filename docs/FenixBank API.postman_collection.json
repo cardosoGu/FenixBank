@@ -1038,7 +1038,7 @@
                     "method": "GET",
                     "header": [],
                     "url": {
-                      "raw": "{{baseUrl}}/api/bank/transactions",
+                      "raw": "{{baseUrl}}/api/bank/transactions?page=5&limit=10",
                       "host": [
                         "{{baseUrl}}"
                       ],
@@ -1046,6 +1046,16 @@
                         "api",
                         "bank",
                         "transactions"
+                      ],
+                      "query": [
+                        {
+                          "key": "page",
+                          "value": "5"
+                        },
+                        {
+                          "key": "limit",
+                          "value": "10"
+                        }
                       ]
                     }
                   },
@@ -1056,13 +1066,13 @@
                         "method": "GET",
                         "header": [
                           {
-                            "description": "Added as a part of security scheme: bearer",
                             "key": "Authorization",
-                            "value": "Bearer <token>"
+                            "value": "Bearer <token>",
+                            "description": "Added as a part of security scheme: bearer"
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/api/bank/transactions",
+                          "raw": "{{baseUrl}}/api/bank/transactions?page=5&limit=10",
                           "host": [
                             "{{baseUrl}}"
                           ],
@@ -1070,6 +1080,16 @@
                             "api",
                             "bank",
                             "transactions"
+                          ],
+                          "query": [
+                            {
+                              "key": "page",
+                              "value": "5"
+                            },
+                            {
+                              "key": "limit",
+                              "value": "10"
+                            }
                           ]
                         }
                       },
@@ -1086,13 +1106,13 @@
                         "method": "GET",
                         "header": [
                           {
-                            "description": "Added as a part of security scheme: bearer",
                             "key": "Authorization",
-                            "value": "Bearer <token>"
+                            "value": "Bearer <token>",
+                            "description": "Added as a part of security scheme: bearer"
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/api/bank/transactions",
+                          "raw": "{{baseUrl}}/api/bank/transactions?page=5&limit=10",
                           "host": [
                             "{{baseUrl}}"
                           ],
@@ -1100,6 +1120,16 @@
                             "api",
                             "bank",
                             "transactions"
+                          ],
+                          "query": [
+                            {
+                              "key": "page",
+                              "value": "5"
+                            },
+                            {
+                              "key": "limit",
+                              "value": "10"
+                            }
                           ]
                         }
                       },

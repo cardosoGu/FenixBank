@@ -6,6 +6,8 @@ import { Types } from "mongoose";
 import { TransactionStatus, TransactionType } from "../../../models/TransactionLogs/ITransactionLog.ts";
 import throwlhos from "throwlhos";
 import { BankService } from "../BankServices.ts";
+import { GetTransactionsResponseDTO } from "../BankDTOs.ts";
+import { formatTransaction } from "../../../utils/formatters.ts";
 
 
 const mockAuthRepository = new MockAuthRepository();
@@ -16,7 +18,7 @@ export class MockBankService extends BankService {
         super(mockAuthRepository as unknown as UserRepository, mockTransactionLogRepository as unknown as TransactionLogRepository);
     }
 
-    override async transfer(userId: string, pixKey: string, amount: number): Promise<any>{
+    override async transfer(userId: string, pixKey: string, amount: number): Promise<any> {
         const user = await mockAuthRepository.findById(new Types.ObjectId(userId));
         if (!user) throw throwlhos.default.err_notFound("User not found!");
 
@@ -38,5 +40,17 @@ export class MockBankService extends BankService {
         });
 
         return { success: true, transactionLog };
+    }
+
+    override async getTransactions(userId: string, page: number, limit: number): Promise<GetTransactionsResponseDTO> {
+        const user = await mockAuthRepository.findById(new Types.ObjectId(userId))
+        if (!user) {
+            throw throwlhos.default.err_notFound("User not found!")
+        }
+        const transactions = await mockTransactionLogRepository.find(new Types.ObjectId(userId))
+        if (!transactions) {
+            throw throwlhos.default.err_notFound("No transactions found for this user!")
+        }
+        return { success: true, message: "Transactions found!", transactions: transactions.map(formatTransaction), pagination: { page: 1, limit: 10, totalPages: 3, totalTransactions: 32 } }
     }
 }

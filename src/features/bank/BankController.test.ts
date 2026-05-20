@@ -189,7 +189,9 @@ Deno.test({
             }
         } as unknown as Request
 
-        await bankController.getTransactions(request, res)
+        const response = await bankController.getTransactions(request, res)
+        console.log("🚀 ~ response:", response)
+
         assert(res.called.send_ok, "Transaction history returned successfully!");
     }
 })

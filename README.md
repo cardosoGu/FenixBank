@@ -158,7 +158,7 @@ Authorization: Bearer <accessToken>
 | `POST` | `/api/bank/deposit` | ✅ | Deposit money |
 | `POST` | `/api/bank/withdraw` | ✅ | Withdraw money |
 | `POST` | `/api/bank/transfer` | ✅ | Transfer via Pix key |
-| `GET` | `/api/bank/transactions` | ✅ | Get transaction history |
+| `GET` | `/api/bank/transactions?page=1&limit=10` | ✅ | Get transaction history with pagination |
 | `GET` | `/api/bank/transactions/:transactionId` | ✅ | Get transaction details |
 | `POST` | `/api/bank/pixKey` | ✅ | Add Pix key |
 | `DELETE` | `/api/bank/pixKey/:key` | ✅ | Remove Pix key |

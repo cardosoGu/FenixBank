@@ -91,4 +91,5 @@ export class MockTransactionLogRepository {
         const log = this.transactionLogs.find((log) => log._id.toString() === id.toString());
         return Promise.resolve(log ?? null);
     }
+
 }

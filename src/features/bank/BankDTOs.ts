@@ -31,6 +31,12 @@ export interface BankResponseDTO extends IBaseResponseDTO {
 
 export interface GetTransactionsResponseDTO extends IBaseResponseDTO {
     transactions: TransactionLogDTO[];
+    pagination: {
+        page: number;
+        limit: number;
+        totalPages: number;
+        totalTransactions: number;
+    };
 }
 
 export interface GetAccountInfoResponseDTO extends IBaseResponseDTO {

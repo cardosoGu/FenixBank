@@ -15,8 +15,8 @@ export class BaseRepository<TDocument extends IBaseInterface, TMethods = {}> {
         return this.model.findOne(match)
     }
 
-    find(match: mongoose.FilterQuery<TDocument>) {
-        return this.model.find(match)
+    find(match: mongoose.FilterQuery<TDocument>, options: mongoose.QueryOptions = {}) {
+        return this.model.find(match, null, options)
     }
 
     create(data: Partial<TDocument>) {

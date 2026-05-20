@@ -188,7 +188,7 @@ router.post('/withdraw', authMiddleware.isLogged, bankController.withdraw)
 
 /**
  * @openapi
- * /api/bank/transactions:
+ * /api/bank/transactions?page=1&limit=10:
  *   get:
  *     tags: [Bank - Transactions]
  *     summary: List user transactions

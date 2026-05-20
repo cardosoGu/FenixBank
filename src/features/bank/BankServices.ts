@@ -152,17 +152,18 @@ export class BankService {
         return { success: true, message: "Withdrawal successful!", transactionLog: formatTransaction(transactionLog) }
     }
 
-    async getTransactions(userId: string): Promise<GetTransactionsResponseDTO> {
+    async getTransactions(userId: string, page: number, limit: number): Promise<GetTransactionsResponseDTO> {
         const user = await this.userRepository.findById(new Types.ObjectId(userId))
         if (!user) {
             throw throwlhos.default.err_notFound("User not found!")
         }
-        const transactions = await this.transactionLogRepository.find({ 'user.userId': new Types.ObjectId(userId) })
+        const transactions = await this.transactionLogRepository.find({ 'user.userId': new Types.ObjectId(userId) }, { skip: (page - 1) * limit, limit: limit })
         if (!transactions) {
             throw throwlhos.default.err_notFound("No transactions found for this user!")
         }
+        const pagination = await this.transactionLogRepository.countTransactions({ 'user.userId': new Types.ObjectId(userId) })
 
-        return { success: true, message: "Transactions found!", transactions: transactions.map(formatTransaction) }
+        return { success: true, message: "Transactions found!", transactions: transactions.map(formatTransaction), pagination: { page, limit, totalPages: Math.ceil(pagination / limit), totalTransactions: pagination } }
     }
 
     async getTransactionById(transactionId: string, userId: string): Promise<BankResponseDTO> {

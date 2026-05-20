@@ -67,12 +67,14 @@ export class BankController {
     }
 
     getTransactions = async (req: Request, res: Response) => {
+        const page = Number(req.query?.page) || 1
+        const limit = Number(req.query?.limit) || 10
         const { userId } = req.user!
         try {
-            const response = await this.bankService.getTransactions(userId)
+            const response = await this.bankService.getTransactions(userId, page, limit)
 
             const formattedTransactions = response.transactions?.map(transaction => (transaction))
-            res.send_ok(response.message, { transactions: formattedTransactions })
+            res.send_ok(response.message, { transactions: formattedTransactions, pagination: response.pagination })
 
         } catch (error: unknown) {
             return handleHttpError(res, error)

@@ -15,7 +15,6 @@ const app: Application = express()
 
 app.use(express.json())
 app.use(cookieParser())
-app.use(cookieParser())
 app.use(responser.default)
 app.use(morgan('dev'))
 app.use(helmet())

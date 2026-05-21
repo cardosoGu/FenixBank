@@ -392,7 +392,7 @@ Deno.test({
             user: {
                 userId: "507f1f77bcf86cd799439013"
             },
-            body:{
+            body: {
                 pixKey: "joao.silva@example.com",
                 amount: 20
             }
@@ -416,7 +416,7 @@ Deno.test({
             user: {
                 userId: "507f1f77bcf86cd799439012"
             },
-            body:{
+            body: {
                 pixKey: "invalid_pix_key",
                 amount: 20
             }
@@ -440,7 +440,7 @@ Deno.test({
             user: {
                 userId: "507f1f77bcf86cd799439011"
             },
-            body:{
+            body: {
                 pixKey: "joao.silva@example.com",
                 amount: 20
             }
@@ -464,7 +464,7 @@ Deno.test({
             user: {
                 userId: "507f1f77bcf86cd799439011"
             },
-            body:{
+            body: {
                 pixKey: "joao.silva@example.com",
                 amount: 50
             }

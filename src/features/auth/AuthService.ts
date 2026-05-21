@@ -36,10 +36,21 @@ export class AuthService {
         }
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
+        const newSession = {
+            refreshToken: hashToken(refreshToken),
+            clientIp,
+            userAgent
+        }
 
-        user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp, userAgent });
-        await user.save()
+        await this.userRepository.updateById(
+            user._id,
+            {
+                $push: {
+                    sessions: newSession
+                },
 
+            }
+        )
         const userInfo = userFormat(user)
         return {
             success: true, message: "User created successfully!", accessToken, refreshToken,
@@ -60,9 +71,21 @@ export class AuthService {
 
         const refreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
+        const newSession = {
+            refreshToken: hashToken(refreshToken),
+            clientIp: data.clientIp,
+            userAgent: data.userAgent
+        }
 
-        user.sessions.push({ refreshToken: hashToken(refreshToken), clientIp: data.clientIp, userAgent: data.userAgent });
-        await user.save()
+        await this.userRepository.updateById(
+            user._id,
+            {
+                $push: {
+                    sessions: newSession
+                }
+            }
+        )
+
         const userInfo = userFormat(user)
 
         return {
@@ -124,9 +147,20 @@ export class AuthService {
         // create new session
         const newRefreshToken = await jwtService.generateRefreshToken(user._id.toString());
         const accessToken = await jwtService.generateAccessToken(user._id.toString());
+        const newSession = {
+            refreshToken: hashToken(newRefreshToken),
+            clientIp: clientIp,
+            userAgent: userAgent
+        }
 
-        user.sessions.push({ refreshToken: hashToken(newRefreshToken), clientIp, userAgent });
-        await user.save()
+        await this.userRepository.updateById(
+            user._id,
+            {
+                $push: {
+                    sessions: newSession
+                }
+            }
+        )
 
         return { success: true, message: "User logged in successfully!", accessToken, refreshToken: newRefreshToken };
     }

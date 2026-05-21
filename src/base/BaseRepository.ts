@@ -25,8 +25,12 @@ export class BaseRepository<TDocument extends IBaseInterface, TMethods = {}> {
         return this.model.create([data], options).then(([doc]) => doc)
     }
 
-    updateById(query: mongoose.FilterQuery<TDocument>, data: UpdateQuery<TDocument>, options: mongoose.QueryOptions = {}) {
-        return this.model.findByIdAndUpdate(query, data, { new: true, ...options })
+    update(query: mongoose.FilterQuery<TDocument>, data: UpdateQuery<TDocument>, options: mongoose.QueryOptions = {}) {
+        return this.model.findOneAndUpdate(query, data, { new: true, ...options })
+    }
+
+    updateById(userId: Types.ObjectId, data: UpdateQuery<TDocument>, options: mongoose.QueryOptions = {}) {
+        return this.model.findByIdAndUpdate(userId, data, { new: true, ...options })
     }
 
     deleteById(id: Types.ObjectId) {

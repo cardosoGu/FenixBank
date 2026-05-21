@@ -45,15 +45,15 @@ export class BankService {
             const newUserBalance = user.account.balance - amount
             const newReceiverBalance = receiver.account.balance + amount
 
-            await this.userRepository.updateById(
+            await this.userRepository.update(
                 { _id: new Types.ObjectId(userId), 'account.balance': { $gte: amount } },
                 { $inc: { 'account.balance': - amount } },
-                { session, new: true }
+                { session }
             )
             await this.userRepository.updateById(
                 new Types.ObjectId(receiver._id),
                 { $inc: { 'account.balance': amount } },
-                { session, new: true }
+                { session }
             )
 
             const transactionLog = await this.transactionLogRepository.createWithSession({
@@ -64,16 +64,28 @@ export class BankService {
                 value: amount
             }, { session })
 
-            user.transactionLogs.push(transactionLog._id!)
-            receiver.transactionLogs.push(transactionLog._id!)
-            await user.save({ session })
-            await receiver.save({ session })
+            await this.userRepository.updateById(
+                user._id,
+                {
+                    $push: {
+                        transactionLogs: transactionLog._id
+                    }
+                }, {session}
+            )
+
+            await this.userRepository.updateById(
+                receiver._id,
+                {
+                    $push: {
+                        transactionLogs: transactionLog._id
+                    }
+                }, {session}
+            )
 
             await session.commitTransaction()
             return { success: true, message: "Transfer successful!", transactionLog: formatTransaction(transactionLog) }
 
-        } catch {
-
+        } catch(error: any) {
             await session.abortTransaction()
             throw throwlhos.default.err_internalServerError("An error occurred while processing the transfer.")
         } finally {
@@ -103,8 +115,12 @@ export class BankService {
             status: TransactionStatus.COMPLETED,
             value: amount
         })
-        user.transactionLogs.push(transactionLog._id!)
-        await user.save()
+        await this.userRepository.updateById(
+            user._id,
+            {
+                $push: { transactionLogs: transactionLog._id }
+            }
+        )
         return { success: true, message: "Deposit successful!", transactionLog: formatTransaction(transactionLog) }
 
     }
@@ -144,10 +160,14 @@ export class BankService {
             value: amount
         })
 
-        await this.userRepository.updateById(new Types.ObjectId(userId), { 'account.balance': newBalance })
-        await this.transactionLogRepository.updateById(transactionLog._id!, { status: TransactionStatus.COMPLETED })
-        user.transactionLogs.push(transactionLog._id!)
-        await user.save()
+
+        await this.transactionLogRepository.updateById(transactionLog._id, { status: TransactionStatus.COMPLETED })
+        await this.userRepository.update(
+            { _id: new Types.ObjectId(userId), 'account.balance': { $gte: amount } },
+            {
+                $inc: { 'account.balance': - amount },
+                $push: { transactionLogs: transactionLog._id }
+            })
 
         return { success: true, message: "Withdrawal successful!", transactionLog: formatTransaction(transactionLog) }
     }
@@ -204,8 +224,15 @@ export class BankService {
         if (pixKeyExists) {
             throw throwlhos.default.err_badRequest('This pix key is already registered by another user')
         }
-        user.account.pixKeys.push(newPixKey)
-        await user.save()
+
+        await this.userRepository.updateById(
+            user._id,
+            {
+                $push: {
+                    'account.pixKeys': newPixKey
+                }
+            }
+        )
         return { success: true, message: 'PIX key added successfully' }
     }
 
@@ -217,8 +244,14 @@ export class BankService {
         if (!user.account.pixKeys.includes(pixKey)) {
             throw throwlhos.default.err_badRequest('PIX key not found in your account')
         }
-        user.account.pixKeys = user.account.pixKeys.filter((key) => key !== pixKey)
-        await user.save()
+        await this.userRepository.updateById(
+            user._id,
+            {
+                $pull: {
+                    'account.pixKeys': pixKey
+                }
+            }
+        )
         return { success: true, message: 'PIX key removed successfully' }
     }
 

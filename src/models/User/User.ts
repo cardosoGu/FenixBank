@@ -10,7 +10,7 @@ const sessionSchema = new Schema<ISession>({
 })
 
 const accountSchema = new Schema<IAccount>({
-    pixKeys: { type: [String], default: [], unique: true },
+    pixKeys: { type: [String], default: [] },
     balance: { type: Number, required: false, min: [0, 'Balance cannot be negative'], default: 0 },
 })
 
@@ -82,6 +82,6 @@ UserSchema.pre('save', async function (next) {
 
     next()
 })
-
+UserSchema.index({ 'account.pixKeys': 1 }, { unique: true, sparse: true })
 
 export { UserSchema }

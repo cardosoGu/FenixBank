@@ -128,6 +128,17 @@ export class MockAuthRepository {
     findByPixKey(pixKey: string) {
         return Promise.resolve(this.users.find((user) => user.account.pixKeys.includes(pixKey)) ?? null);
     }
+    update(filter: Partial<IUser>, data: Partial<IUser>): Promise<IUser | null> {
+        const user = this.users.find((u) => u._id.toString() === filter._id?.toString())
+
+        if (!user) {
+            return Promise.resolve(null)
+        }
+
+        Object.assign(user, data)
+
+        return Promise.resolve(user)
+    }
     updateById(id: Types.ObjectId, data: Partial<IUser>) {
         const user = this.users.find((candidate) => candidate._id.toString() === id.toString());
         if (!user) {

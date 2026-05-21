@@ -27,8 +27,8 @@ export class UserRepository extends BaseRepository<IUser, IUserMethods> {
         return this.model.updateOne(
             { _id: userId },
             {
-                $pull: {
-                    sessions: {}
+                $set: {
+                    sessions: []
                 }
             }
         );

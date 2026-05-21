@@ -46,14 +46,14 @@ export class BankService {
             const newReceiverBalance = receiver.account.balance + amount
 
             await this.userRepository.updateById(
-                new Types.ObjectId(userId),
-                { 'account.balance': newUserBalance },
-                { session }
+                { _id: new Types.ObjectId(userId), 'account.balance': { $gte: amount } },
+                { $inc: { 'account.balance': - amount } },
+                { session, new: true }
             )
             await this.userRepository.updateById(
                 new Types.ObjectId(receiver._id),
-                { 'account.balance': newReceiverBalance },
-                { session }
+                { $inc: { 'account.balance': amount } },
+                { session, new: true }
             )
 
             const transactionLog = await this.transactionLogRepository.createWithSession({

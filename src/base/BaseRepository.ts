@@ -1,6 +1,5 @@
 import mongoose, { Model, Types, UpdateQuery } from 'mongoose'
 import { IBaseInterface } from './IBaseInterface.ts'
-
 export class BaseRepository<TDocument extends IBaseInterface, TMethods = {}> {
     protected model: Model<TDocument, {}, TMethods>;
 
@@ -26,8 +25,8 @@ export class BaseRepository<TDocument extends IBaseInterface, TMethods = {}> {
         return this.model.create([data], options).then(([doc]) => doc)
     }
 
-    updateById(id: Types.ObjectId, data: UpdateQuery<TDocument>, options: mongoose.QueryOptions = {}) {
-        return this.model.findByIdAndUpdate(id, data, { new: true, ...options })
+    updateById(query: mongoose.FilterQuery<TDocument>, data: UpdateQuery<TDocument>, options: mongoose.QueryOptions = {}) {
+        return this.model.findByIdAndUpdate(query, data, { new: true, ...options })
     }
 
     deleteById(id: Types.ObjectId) {

@@ -10,7 +10,7 @@ import { hashToken } from "../utils/Crypto.ts";
  *
  */
 
-export class AuthMiddleware {
+class AuthMiddleware {
     constructor(private userRepository: UserRepository) { }
 
 

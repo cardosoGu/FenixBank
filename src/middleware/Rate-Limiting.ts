@@ -12,3 +12,14 @@ export const authRateLimiting = rateLimit({
     }
 })
 
+export const bankOperationsRateLimiting = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 100,
+    statusCode: 429,
+    message: {
+        status: 'TOO_MANY_REQUESTS',
+        code: 429,
+        success: false,
+        message: 'too many requests. try again soon.',
+    }
+})

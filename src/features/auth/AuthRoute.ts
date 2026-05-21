@@ -3,7 +3,7 @@ import { AuthController } from "./AuthController.ts";
 import { UserRepository } from "../../models/User/UserRepository.ts";
 import { AuthService } from "./AuthService.ts";
 import { AuthRules } from "./AuthRules.ts";
-import { AuthMiddleware } from "../../middleware/AuthMiddleware.ts";
+import { authMiddleware } from "../../middleware/AuthMiddleware.ts";
 import { authRateLimiting } from "../../middleware/Rate-Limiting.ts";
 /**
  * Prefix: api/auth/
@@ -11,7 +11,6 @@ import { authRateLimiting } from "../../middleware/Rate-Limiting.ts";
 
 const userRepository = new UserRepository()
 const authRules = new AuthRules()
-const authMiddleware = new AuthMiddleware(userRepository)
 const authService = new AuthService(userRepository)
 const authController = new AuthController(authService, authRules)
 

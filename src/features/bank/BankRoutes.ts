@@ -5,6 +5,7 @@ import { TransactionLogRepository } from "../../models/TransactionLogs/Transacti
 import { UserRepository } from "../../models/User/UserRepository.ts";
 import { BankRules } from "./BankRules.ts";
 import { authMiddleware } from "../../middleware/AuthMiddleware.ts";
+import { bankOperationsRateLimiting } from "../../middleware/Rate-Limiting.ts";
 
 /**
  * Prefix: api/bank/
@@ -72,7 +73,7 @@ const bankController = new BankController(bankService, bankRules)
  *               success: false
  *               message: Authentication required.
  */
-router.post('/transfer', authMiddleware.isLogged, bankController.transfer)
+router.post('/transfer', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.transfer)
 
 /**
  * @openapi
@@ -129,7 +130,7 @@ router.post('/transfer', authMiddleware.isLogged, bankController.transfer)
  *               success: false
  *               message: Authentication required.
  */
-router.post('/deposit', authMiddleware.isLogged, bankController.deposit)
+router.post('/deposit', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.deposit)
 
 /**
  * @openapi
@@ -184,7 +185,7 @@ router.post('/deposit', authMiddleware.isLogged, bankController.deposit)
  *               success: false
  *               message: Authentication required.
  */
-router.post('/withdraw', authMiddleware.isLogged, bankController.withdraw)
+router.post('/withdraw', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.withdraw)
 
 /**
  * @openapi
@@ -229,7 +230,7 @@ router.post('/withdraw', authMiddleware.isLogged, bankController.withdraw)
  *               success: false
  *               message: Authentication required.
  */
-router.get('/transactions', authMiddleware.isLogged, bankController.getTransactions)
+router.get('/transactions', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.getTransactions)
 
 /**
  * @openapi
@@ -298,7 +299,7 @@ router.get('/transactions', authMiddleware.isLogged, bankController.getTransacti
  *               success: false
  *               message: Transaction not found.
  */
-router.get('/transactions/:id', authMiddleware.isLogged, bankController.getTransactionById)
+router.get('/transactions/:id', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.getTransactionById)
 
 /**
  * @openapi
@@ -348,7 +349,7 @@ router.get('/transactions/:id', authMiddleware.isLogged, bankController.getTrans
  *               success: false
  *               message: User not found.
  */
-router.get('/account', authMiddleware.isLogged, bankController.getAccountInfo)
+router.get('/account', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.getAccountInfo)
 
 /**
  * @openapi
@@ -401,7 +402,7 @@ router.get('/account', authMiddleware.isLogged, bankController.getAccountInfo)
  *               success: false
  *               message: Authentication required.
  */
-router.post('/pixKey', authMiddleware.isLogged, bankController.addPixKey)
+router.post('/pixKey', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.addPixKey)
 
 /**
  * @openapi
@@ -456,6 +457,6 @@ router.post('/pixKey', authMiddleware.isLogged, bankController.addPixKey)
  *               success: false
  *               message: Authentication required.
  */
-router.delete('/pixKey/:key', authMiddleware.isLogged, bankController.removePixKey)
+router.delete('/pixKey/:key', bankOperationsRateLimiting ,authMiddleware.isLogged, bankController.removePixKey)
 
 export default router

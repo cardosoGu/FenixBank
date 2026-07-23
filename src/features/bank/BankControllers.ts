@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { BankService } from "./BankServices.ts";
 import { BankRules } from "./BankRules.ts";
-import { ITransactionLog } from "../../models/TransactionLogs/ITransactionLog.ts";
 import { handleHttpError } from "../../utils/HttpErrorHandle.ts";
 
 

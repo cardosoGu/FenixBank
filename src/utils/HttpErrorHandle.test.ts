@@ -1,5 +1,4 @@
-// deno-lint-ignore no-import-prefix
-import { assert } from "https://deno.land/std@0.220.0/assert/mod.ts";
+import { assert } from "@std/assert";
 import { Response } from "express";
 import { handleHttpError } from "./HttpErrorHandle.ts";
 import { MockResponser } from "./Stubs.ts";

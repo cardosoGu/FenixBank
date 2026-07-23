@@ -35,4 +35,5 @@ export interface IUserMethods {
 }
 
 export type UserDocument = HydratedDocument<IUser, IUserMethods>;
+// deno-lint-ignore ban-types
 export type UserModel = Model<IUser, {}, IUserMethods>;

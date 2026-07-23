@@ -68,7 +68,7 @@ export class MockTransactionLogRepository {
         this.transactionLogs.push(newTransactionLog);
         return Promise.resolve(newTransactionLog);
     }
-    createWithSession(data: Omit<ITransactionLog, '_id'>, options: { session: any }): Promise<ITransactionLog> {
+    createWithSession(data: Omit<ITransactionLog, '_id'>, _options: { session: unknown }): Promise<ITransactionLog> {
         return this.create(data);
     }
 

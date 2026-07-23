@@ -3,12 +3,206 @@ name: distribute on merge
 on:
   pull_request:
     types: [closed]
-    branch: [main]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  distribute:
+  parse-checkboxes:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      branches: ${{ steps.parse.outputs.branches }}
+      has_targets: ${{ steps.parse.outputs.has_targets }}
+      sha: ${{ steps.parse.outputs.sha }}
     steps:
-      - name: log merge
-        run: echo "Merge detected"
+      - name: Parse checkboxes
+        id: parse
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${MERGE_SHA}" ]; then
+            echo "::error::merge_commit_sha is empty"
+            exit 1
+          fi
+
+          BRANCHES=()
+          for name in prod-a prod-b prod-c; do
+            if printf '%s\n' "$PR_BODY" | grep -Eiq -- "- \[x\][[:space:]]+${name}([[:space:]]|$)"; then
+              BRANCHES+=("$name")
+            fi
+          done
+
+          echo "sha=${MERGE_SHA}" >> "$GITHUB_OUTPUT"
+
+          if [ ${#BRANCHES[@]} -eq 0 ]; then
+            echo "has_targets=false" >> "$GITHUB_OUTPUT"
+            echo 'branches=[]' >> "$GITHUB_OUTPUT"
+            echo "Nenhuma branch priorizada."
+          else
+            JSON="["
+            first=1
+            for b in "${BRANCHES[@]}"; do
+              if [ "$first" -eq 1 ]; then first=0; else JSON+=","; fi
+              JSON+="\"${b}\""
+            done
+            JSON+="]"
+            echo "has_targets=true" >> "$GITHUB_OUTPUT"
+            echo "branches=${JSON}" >> "$GITHUB_OUTPUT"
+            echo "Priorizadas: ${JSON}"
+          fi
+
+      - name: Comment when no priority targets
+        if: steps.parse.outputs.has_targets == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body "Sem branches de prioridade imediata marcadas. Distribui├º├úo pontual ignorada; o job di├írio far├í o pareamento."
+
+  distribute:
+    needs: parse-checkboxes
+    if: needs.parse-checkboxes.outputs.has_targets == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: ${{ fromJson(needs.parse-checkboxes.outputs.branches) }}
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Apply merge commit
+        id: apply
+        env:
+          SHA: ${{ needs.parse-checkboxes.outputs.sha }}
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin main
+          git fetch origin "$SHA" || true
+
+          if git merge-base --is-ancestor "$SHA" HEAD; then
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            echo "skip: ${SHA} already in ${BRANCH}" | tee "${BRANCH}.txt"
+            exit 0
+          fi
+
+          if git cherry-pick "$SHA"; then
+            echo "Cherry-pick ok (plain)"
+          elif git cherry-pick -m 1 "$SHA"; then
+            echo "Cherry-pick ok (-m 1)"
+          else
+            git cherry-pick --abort 2>/dev/null || true
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "fail: cherry-pick conflict for ${SHA}" | tee "${BRANCH}.txt"
+            exit 1
+          fi
+
+          echo "status=applied" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Deno
+        if: steps.apply.outputs.status == 'applied'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Lint
+        if: steps.apply.outputs.status == 'applied'
+        run: deno lint src
+
+      - name: Type check
+        if: steps.apply.outputs.status == 'applied'
+        run: deno check server.ts
+
+      - name: Test
+        if: steps.apply.outputs.status == 'applied'
+        env:
+          DATABASE_URL: mongodb://localhost:27017
+          DB_NAME: fenixbank_test
+          PORT: "3000"
+          JWT_ACCESS_SECRET: ci-test-access-secret
+          JWT_REFRESH_SECRET: ci-test-refresh-secret
+          JWT_ACCESS_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+        run: deno task test
+
+      - name: Push branch
+        if: steps.apply.outputs.status == 'applied'
+        env:
+          BRANCH: ${{ matrix.branch }}
+          SHA: ${{ needs.parse-checkboxes.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git push origin "HEAD:${BRANCH}"
+          echo "ok: pushed ${SHA} to ${BRANCH}" | tee "${BRANCH}.txt"
+
+      - name: Record gate or push failure
+        if: failure() && steps.apply.outputs.status == 'applied'
+        env:
+          BRANCH: ${{ matrix.branch }}
+        run: |
+          echo "fail: lint/check/test gate or push" | tee "${BRANCH}.txt"
+
+      - name: Upload branch result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.branch }}
+          path: ${{ matrix.branch }}.txt
+          if-no-files-found: warn
+
+  summary:
+    needs: [parse-checkboxes, distribute]
+    if: always() && needs.parse-checkboxes.outputs.has_targets == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download results
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+          pattern: result-*
+          merge-multiple: true
+
+      - name: Comment PR summary
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ needs.parse-checkboxes.outputs.sha }}
+          BRANCHES_JSON: ${{ needs.parse-checkboxes.outputs.branches }}
+        run: |
+          set -euo pipefail
+
+          BODY="## Distribui├º├úo pontual"$'\n'
+          BODY+="SHA: \`${SHA}\`"$'\n\n'
+
+          # shellcheck disable=SC2207
+          BRANCHES=($(echo "$BRANCHES_JSON" | tr -d '[]"' | tr ',' ' '))
+          for b in "${BRANCHES[@]}"; do
+            file="results/${b}.txt"
+            if [ -f "$file" ]; then
+              line=$(cat "$file")
+            else
+              line="fail: no result artifact (job may have failed before write)"
+            fi
+            BODY+="- **${b}**: ${line}"$'\n'
+          done
+
+          gh pr comment "$PR_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --body "$BODY"

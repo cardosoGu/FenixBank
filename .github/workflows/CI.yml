@@ -1,0 +1,32 @@
+name: CI
+
+on: 
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      uses: actions/checkout@v4
+
+      uses: actions/setup-deno@v2
+        with: 
+          deno-version: v2.x
+
+      name: deno cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.deno
+          ~/.cache/deno
+        key: deno-${{ runner.os }}-${{ hashFiles('deno.lock') }}
+
+        name: deno lint
+        run: deno lint
+
+        name: deno test
+        run: deno run test
+
+        name: deno check
+        run: deno check

@@ -1,0 +1,7 @@
+name: distribute on merge
+
+on:
+  pull_request:
+    types: [closed]
+    branch: [main]
+

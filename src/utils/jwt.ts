@@ -1,5 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { env } from '../../config/Env.ts';
+import { env } from '../../config/env.ts';
 
 
 

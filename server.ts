@@ -1,5 +1,5 @@
 import app from './app.ts'
-import { env } from './config/Env.ts'
+import { env } from './config/env.ts'
 import { DBConnection } from "./config/db.ts";
 import throwlhos from 'throwlhos'
 

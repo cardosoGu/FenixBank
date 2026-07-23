@@ -5,3 +5,10 @@ on:
     types: [closed]
     branch: [main]
 
+jobs:
+  distribute:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: log merge
+        run: echo "Merge detected"

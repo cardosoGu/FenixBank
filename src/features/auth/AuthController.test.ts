@@ -1,5 +1,4 @@
-// deno-lint-ignore no-import-prefix
-import { assertEquals, assert, assertExists } from "https://deno.land/std@0.220.0/assert/mod.ts";
+import { assertEquals, assert, assertExists } from "@std/assert";
 import { AuthController } from "./AuthController.ts";
 import { AuthRules } from "./AuthRules.ts";
 import { MockResponser } from "../../utils/Stubs.ts";

@@ -9,3 +9,8 @@ export interface IBaseResponseDTO {
     success: boolean;
     message: string;
 }
+
+export interface IBaseService {
+    insuccess: boolean;
+    message: string;
+}

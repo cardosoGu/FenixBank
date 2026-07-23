@@ -85,7 +85,7 @@ export class BankService {
             await session.commitTransaction()
             return { success: true, message: "Transfer successful!", transactionLog: formatTransaction(transactionLog) }
 
-        } catch(error: any) {
+        } catch {
             await session.abortTransaction()
             throw throwlhos.default.err_internalServerError("An error occurred while processing the transfer.")
         } finally {

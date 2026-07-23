@@ -1,5 +1,4 @@
-// deno-lint-ignore no-import-prefix
-import { assert, assertExists } from "https://deno.land/std@0.220.0/assert/mod.ts";
+import { assert, assertExists } from "@std/assert";
 import { MockResponser } from "../../utils/Stubs.ts";
 import { BankController } from "./BankControllers.ts";
 import { BankRules } from "./BankRules.ts";

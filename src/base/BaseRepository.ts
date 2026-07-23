@@ -1,3 +1,4 @@
+// deno-lint-ignore-file ban-types
 import mongoose, { Model, Types, UpdateQuery } from 'mongoose'
 import { IBaseInterface } from './IBaseInterface.ts'
 export class BaseRepository<TDocument extends IBaseInterface, TMethods = {}> {

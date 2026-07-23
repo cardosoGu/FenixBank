@@ -1,5 +1,5 @@
 import { BaseRules } from "../../base/BaseRules.ts";
-import is from 'jsr:@zarco/isness'
+import is from "@zarco/isness";
 
 export class AuthRules extends BaseRules {
 

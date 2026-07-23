@@ -1,4 +1,3 @@
-import rc from 'request-check';
 import throwlhos from "throwlhos";
 
 type Rule = {

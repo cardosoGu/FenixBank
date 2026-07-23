@@ -1,6 +1,6 @@
 name: CI
 
-on: 
+on:
   pull_request:
     branches: [main]
 
@@ -8,25 +8,34 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      uses: actions/setup-deno@v2
-        with: 
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
           deno-version: v2.x
 
-      name: deno cache
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.deno
-          ~/.cache/deno
-        key: deno-${{ runner.os }}-${{ hashFiles('deno.lock') }}
+      - name: Cache Deno
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.deno
+            ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('deno.lock') }}
 
-        name: deno lint
-        run: deno lint
+      - name: Lint
+        run: deno lint src
 
-        name: deno test
-        run: deno run test
+      - name: Type check
+        run: deno check server.ts
 
-        name: deno check
-        run: deno check
+      - name: Test
+        env:
+          DATABASE_URL: mongodb://localhost:27017
+          DB_NAME: fenixbank_test
+          PORT: "3000"
+          JWT_ACCESS_SECRET: ci-test-access-secret
+          JWT_REFRESH_SECRET: ci-test-refresh-secret
+          JWT_ACCESS_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+        run: deno task test

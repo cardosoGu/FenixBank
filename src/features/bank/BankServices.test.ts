@@ -1,7 +1,4 @@
-// deno-lint-ignore no-import-prefix
-import {
-    assert,
-} from "https://deno.land/std@0.220.0/assert/mod.ts";
+import { assert } from "@std/assert";
 import mongoose from "mongoose";
 import { BankService } from "./BankServices.ts";
 import { UserRepository } from "../../models/User/UserRepository.ts";
@@ -50,13 +47,13 @@ async function withMockedSession<T>(fn: () => Promise<T>) {
     const originalStartSession = mongoose.startSession;
     const fakeSession: SessionLike = {
         startTransaction: () => { },
-        commitTransaction: async () => { },
-        abortTransaction: async () => { },
-        endSession: async () => { },
+        commitTransaction: () => Promise.resolve(),
+        abortTransaction: () => Promise.resolve(),
+        endSession: () => Promise.resolve(),
     };
 
     (mongoose as unknown as { startSession: () => Promise<SessionLike> }).startSession =
-        async () => fakeSession;
+        () => Promise.resolve(fakeSession);
 
     try {
         return await fn();

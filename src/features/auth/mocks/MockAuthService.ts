@@ -2,6 +2,7 @@ import { AuthService } from '../AuthService.ts'
 import { MockAuthRepository } from './MockAuthRepository.ts'
 import { UserRepository } from '../../../models/User/UserRepository.ts'
 import throwlhos from "throwlhos";
+import { RefreshResponseDTO } from "../AuthDTOs.ts";
 
 
 export class MockAuthService extends AuthService {
@@ -9,22 +10,14 @@ export class MockAuthService extends AuthService {
         super(new MockAuthRepository() as unknown as UserRepository)
     }
 
-    override async refresh(refreshToken: string, clientIp: string, userAgent: string) {
+    override refresh(refreshToken: string, _clientIp: string, _userAgent: string): Promise<RefreshResponseDTO> {
         if (refreshToken === 'hashed_refresh_token_mock_1') {
-            return {
+            return Promise.resolve({
                 success: true,
-
                 message: "Token refreshed successfully",
-
                 accessToken: "mocked-access-token",
-
                 refreshToken: "mocked-refresh-token",
-
-                user: {
-                    _id: "123",
-                    email: "mock@example.com",
-                },
-            } as any
+            });
         }
         throw throwlhos.default.err_unauthorized("Invalid refresh token!");
     }

@@ -1,7 +1,17 @@
+type MockCookie = {
+    name: string;
+    value: unknown;
+    options?: unknown;
+};
+
+// Test helper: payload shape varies per endpoint assertion.
+// deno-lint-ignore no-explicit-any
+type MockPayload = any;
+
 export function MockResponser() {
     return {
-        payload: null as any,
-        cookies: [] as any[],
+        payload: null as MockPayload,
+        cookies: [] as MockCookie[],
 
         called: {
             cookie: false,
@@ -28,7 +38,7 @@ export function MockResponser() {
             return this;
         },
 
-        clearCookie(name: string) {
+        clearCookie(_name: string) {
             this.called.clearCookie = true;
 
             return this;

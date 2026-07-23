@@ -1,8 +1,4 @@
-// deno-lint-ignore no-import-prefix
-import {
-    assertEquals,
-    assertThrows,
-} from "https://deno.land/std@0.220.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { jwtService } from "./jwt.ts";
 
 Deno.test("JWTService - should generate and verify access token", () => {

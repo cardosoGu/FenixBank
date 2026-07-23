@@ -1,7 +1,7 @@
 import { UserRepository } from "../../models/User/UserRepository.ts";
 
 import { jwtService } from "../../utils/jwt.ts"
-import { ISession, IUser } from "../../models/User/IUser.ts";
+import { ISession } from "../../models/User/IUser.ts";
 import { Types } from "mongoose";
 import { hashToken } from "../../utils/Crypto.ts";
 import throwlhos from "throwlhos";

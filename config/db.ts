@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import throwlhos from 'throwlhos'
-import { env } from "./Env.ts";
+import { env } from "./env.ts";
 
 export async function DBConnection() {
   console.log("Trying to connect to MongoDB...");

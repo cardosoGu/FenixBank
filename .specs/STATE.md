@@ -45,10 +45,10 @@
 ## Handoff
 
 - **Feature**: distribute-on-merge / `.specs/features/distribute-on-merge`
-- **Phase / Task**: Execute — bootstrap specs
-- **Completed**: none
-- **In-progress**: creating `.specs/` and completing workflow
-- **Next step**: Finish `parse-checkboxes` job then matrix distribute + summary
-- **Blockers**: none
-- **Uncommitted files**: pending
-- **Branch**: (current working branch)
+- **Phase / Task**: Execute complete — Verifier PASS
+- **Completed**: bootstrap specs, parse-checkboxes, distribute+summary, validation
+- **In-progress**: none
+- **Next step**: Live UAT via merge PR with checkbox; then daily pairing job
+- **Blockers**: none (sensor LIMITED — no workflow unit harness)
+- **Uncommitted files**: validation.md + spec status (committing)
+- **Branch**: main

@@ -117,12 +117,12 @@ Merges into `main` do not propagate changes to deploy branches (`prod-a` / `prod
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| DIST-01 | P1: Parse + trigger | Execute | Implementing |
-| DIST-02 | P1: No targets → comment | Execute | Implementing |
-| DIST-03 | P1: Cherry-pick / idempotency / conflict | Execute | Implementing |
-| DIST-04 | P1: Pre-push gate | Execute | Implementing |
-| DIST-05 | P1: Push only if gate ok | Execute | Implementing |
-| DIST-06 | P2: PR summary comment | Execute | Implementing |
+| DIST-01 | P1: Parse + trigger | Execute | Verified |
+| DIST-02 | P1: No targets → comment | Execute | Verified |
+| DIST-03 | P1: Cherry-pick / idempotency / conflict | Execute | Verified |
+| DIST-04 | P1: Pre-push gate | Execute | Verified |
+| DIST-05 | P1: Push only if gate ok | Execute | Verified |
+| DIST-06 | P2: PR summary comment | Execute | Verified |
 
 **Coverage:** 6 total, 6 mapped to workflow jobs, 0 unmapped.
 

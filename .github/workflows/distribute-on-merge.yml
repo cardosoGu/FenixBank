@@ -3,12 +3,65 @@ name: distribute on merge
 on:
   pull_request:
     types: [closed]
-    branch: [main]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  distribute:
+  parse-checkboxes:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      branches: ${{ steps.parse.outputs.branches }}
+      has_targets: ${{ steps.parse.outputs.has_targets }}
+      sha: ${{ steps.parse.outputs.sha }}
     steps:
-      - name: log merge
-        run: echo "Merge detected"
+      - name: Parse checkboxes
+        id: parse
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${MERGE_SHA}" ]; then
+            echo "::error::merge_commit_sha is empty"
+            exit 1
+          fi
+
+          BRANCHES=()
+          for name in prod-a prod-b prod-c; do
+            if printf '%s\n' "$PR_BODY" | grep -Eiq -- "- \[x\][[:space:]]+${name}([[:space:]]|$)"; then
+              BRANCHES+=("$name")
+            fi
+          done
+
+          echo "sha=${MERGE_SHA}" >> "$GITHUB_OUTPUT"
+
+          if [ ${#BRANCHES[@]} -eq 0 ]; then
+            echo "has_targets=false" >> "$GITHUB_OUTPUT"
+            echo 'branches=[]' >> "$GITHUB_OUTPUT"
+            echo "Nenhuma branch priorizada."
+          else
+            JSON="["
+            first=1
+            for b in "${BRANCHES[@]}"; do
+              if [ "$first" -eq 1 ]; then first=0; else JSON+=","; fi
+              JSON+="\"${b}\""
+            done
+            JSON+="]"
+            echo "has_targets=true" >> "$GITHUB_OUTPUT"
+            echo "branches=${JSON}" >> "$GITHUB_OUTPUT"
+            echo "Priorizadas: ${JSON}"
+          fi
+
+      - name: Comment when no priority targets
+        if: steps.parse.outputs.has_targets == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body "Sem branches de prioridade imediata marcadas. Distribuição pontual ignorada; o job diário fará o pareamento."

@@ -30,4 +30,12 @@ jobs:
         run: deno check server.ts
 
       - name: Test
+        env:
+          DATABASE_URL: mongodb://localhost:27017
+          DB_NAME: fenixbank_test
+          PORT: "3000"
+          JWT_ACCESS_SECRET: ci-test-access-secret
+          JWT_REFRESH_SECRET: ci-test-refresh-secret
+          JWT_ACCESS_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
         run: deno task test

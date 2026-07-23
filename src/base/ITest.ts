@@ -1,4 +1,4 @@
 interface ITest {
-hello: string;
-world: number;
+    hello: string;
+    world: number;
 }

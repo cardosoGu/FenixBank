@@ -3,6 +3,7 @@ import { env } from './config/env.ts'
 import { DBConnection } from "./config/db.ts";
 import throwlhos from 'throwlhos'
 
+
 async function main() {
   try {
     // Connect to the database

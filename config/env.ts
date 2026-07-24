@@ -1,5 +1,8 @@
-import "@std/dotenv/load";
 import { z } from 'zod'
+
+if (Deno.env.get("DENO_DEPLOYMENT_ID") === undefined) {
+  await import("@std/dotenv/load");
+}
 
 //Exporting and Validating environment variables using zod
 const envSchema = z.object({

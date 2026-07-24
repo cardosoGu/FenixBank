@@ -1,4 +1,4 @@
-import express, { Application } from 'express'
+import express, { Application, response, request } from 'express'
 import responser from 'responser'
 import morgan from 'morgan'
 import helmet from 'helmet'
@@ -23,6 +23,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 
 // Routes config
+
+app.get('/distribute/prod', (req: request, res: response) => {
+    req.body
+    res.status(200).send("pong")
+})
 
 app.use('/api/auth', authRoutes)
 app.use('/api/bank', bankRoutes)

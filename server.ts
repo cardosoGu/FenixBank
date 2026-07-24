@@ -15,7 +15,7 @@ async function main() {
       console.log(`http://localhost:${env.PORT}/api-docs`)
     })
 
-
+// testing PR
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     throw throwlhos.default.err_internalServerError(`❌ Error starting the server |: ${message}`);

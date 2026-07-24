@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express'
 import { swaggerSpec } from './docs/swagger.ts'
 import authRoutes from './src/features/auth/AuthRoute.ts'
 import bankRoutes from './src/features/bank/BankRoutes.ts'
+import webhook from './src/webhook/distribute-branches.ts'
 const app: Application = express()
 
 
@@ -24,10 +25,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Routes config
 
-app.get('/distribute/prod', (req: request, res: response) => {
-    req.body
-    res.status(200).send("pong")
-})
+app.use('/', webhook)
 
 app.use('/api/auth', authRoutes)
 app.use('/api/bank', bankRoutes)

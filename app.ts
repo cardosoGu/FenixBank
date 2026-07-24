@@ -1,4 +1,4 @@
-import express, { Application } from 'express'
+import express, { Application, response, request } from 'express'
 import responser from 'responser'
 import morgan from 'morgan'
 import helmet from 'helmet'
@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express'
 import { swaggerSpec } from './docs/swagger.ts'
 import authRoutes from './src/features/auth/AuthRoute.ts'
 import bankRoutes from './src/features/bank/BankRoutes.ts'
+import webhook from './src/webhook/distribute-branches.ts'
 const app: Application = express()
 
 
@@ -23,6 +24,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 
 // Routes config
+
+app.use('/', webhook)
 
 app.use('/api/auth', authRoutes)
 app.use('/api/bank', bankRoutes)

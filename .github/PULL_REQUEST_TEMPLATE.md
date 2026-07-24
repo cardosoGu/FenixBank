@@ -1,4 +1,11 @@
 ## Deploy imediato (prioridade)
-- [ ] prod-a
-- [ ] prod-b
-- [ ] prod-c
+
+- [ ] production-selfcontract 
+- [ ] production-server 
+- [ ] production-hooks
+- [ ] production-api
+- [ ] jobs 
+
+## Descrição
+
+xxx

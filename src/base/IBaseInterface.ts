@@ -8,5 +8,4 @@ export interface IBaseInterface {
 export interface IBaseResponseDTO {
     success: boolean;
     message: string;
-    error?: string;
 }
